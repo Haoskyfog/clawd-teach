@@ -52,7 +52,7 @@ git clone https://github.com/Haoskyfog/clawd-teach ~/.claude/skills/clawd-teach
 ## 用法示例
 
 ```
-/clawd-teach 给专升本学生讲高数导论课，40 分钟
+/clawd-teach 给学生讲高数导论课，40 分钟
 /clawd-teach 讲讲二分查找，给编程新手
 /clawd-teach 为什么天空是蓝的？给初中生
 ```
