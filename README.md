@@ -6,6 +6,12 @@
 
 **👉 在线演示：[jiaoxuetest.pages.dev](https://jiaoxuetest.pages.dev/)**（直接在浏览器里翻页，不用安装）
 
+**🎬 演示视频**（62 秒，点图片观看）：
+
+[![演示视频：AI Agent 第 1 讲](docs/screenshots/00-demo-video.jpg)](https://github.com/Haoskyfog/clawd-teach/releases/download/demo-video/clawd-teach-demo.mp4)
+
+<sub>视频放在 [Release](https://github.com/Haoskyfog/clawd-teach/releases/tag/demo-video) 里，`git clone` 安装 skill 时不会下载它。</sub>
+
 ![对话开场](docs/screenshots/01-chat.jpg)
 
 ```
