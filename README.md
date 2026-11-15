@@ -75,12 +75,14 @@ assets/template.html        引擎 + 8 种页面骨架（封面 / 开场玩笑 /
 references/
   design-system.md          Swiss Style B 规则与组件
   clawd.md                  Clawd 的站位、动作和说话风格
+  patterns.md               跨学科动画模式库：10 种「让概念动起来」的套路 + 代码骨架
   scenes.md                 canvas 动画写法与踩过的坑
   script-format.md          台词稿格式
-scripts/check_deck.py       静态检查：漏写台词、占位符、违反风格等
+scripts/check_deck.py       静态检查：漏写台词、占位符、违反风格，以及「合格但无聊」的质量警告
 examples/
   calculus-intro.html       16 页「高数导论课」（专升本）+ 台词
   binary-search.html        8 页「二分查找」+ 台词
+  rag.html                  15 页「RAG 检索增强生成」+ 台词（流水线、切块、向量地图、开卷/闭卷开关）
 ```
 
 检查一份课件：
@@ -88,6 +90,8 @@ examples/
 ```bash
 python3 scripts/check_deck.py 你的课件.html
 ```
+
+除了结构和风格错误，它还会给出 `QUALITY` 警告：动画代码互相复制、画布上只有方框加文字、同一个版式反复用、空洞的小标题（如 `01 · THINK`）、没用上模板里的 hook / 总结 / 路线图、Clawd 每页都一样。这些警告是为了让不同的模型都能做出生动的课件，而不只是「能跑」。
 
 ## 说明
 

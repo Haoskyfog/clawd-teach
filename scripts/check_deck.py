@@ -7,8 +7,12 @@ Catches the mistakes that are easy to make when editing the single-file deck:
 slide ids without a Clawd script, step counts that don't line up, missing
 canvas ids, leftover 【placeholders】, and Swiss-style violations (rounded
 corners, shadows, gradients, serif fonts, tiny text, off-palette colours).
+It also prints advisory QUALITY warnings for the patterns that make a deck
+dull: copy-pasted or static canvas scenes, one layout repeated everywhere,
+generic kickers, unused template components and a uniform Clawd.
 Exit code 1 if any ERROR, 0 otherwise (WARNs are advisory).
 """
+import difflib
 import re
 import sys
 
@@ -44,6 +48,7 @@ def main(path):
     # ---- Clawd script
     cl_m = re.search(r'const CL=\{(.*?)\n\};', js, re.S)
     cl = {}
+    cl_entries = {}
     if not cl_m:
         errs.append('const CL={...}; block not found')
     else:
@@ -54,6 +59,7 @@ def main(path):
             seg = block[km.end():end]
             says = re.findall(r"say:'((?:[^'\\]|\\.)*)'", seg)
             cl[km.group(1)] = says
+            cl_entries[km.group(1)] = re.findall(r'\{[^{}]*\}', seg)
 
     for sid in ids:
         body = bodies[sid]
@@ -110,6 +116,8 @@ def main(path):
         if len(hx) in (4, 7) and hx not in ALLOWED_HEX:
             warns.append(f'off-palette colour {hx} — Style B has one accent (#D97757) plus greys')
 
+    quality(js, markup, ids, bodies, cl_entries, warns)
+
     print(f'slides: {len(ids)}  ->  ' + ' · '.join(ids))
     for e in errs:
         print('ERROR', e)
@@ -118,6 +126,83 @@ def main(path):
     if not errs and not warns:
         print('OK — no issues found')
     return 1 if errs else 0
+
+
+MOTION = re.compile(r'\blerp\(|\bease\(|Math\.(sin|cos|exp|pow|hypot|atan2)|\bclock\b|\bnow\b|mulberry\(')
+
+
+def quality(js, markup, ids, bodies, cl_entries, warns):
+    """Advisory checks for decks that are valid but dull."""
+    q = lambda msg: warns.append('QUALITY ' + msg)
+
+    # -- canvas scenes: copy-pasted or static
+    scenes = {m.group(1): m.group(2) for m in
+              re.finditer(r'^SC\.(\w+)=(.*?)\}\)\(\);', js, re.M | re.S)}
+
+    def norm(sid, body):
+        b = body.replace(sid, 'ID')
+        b = re.sub(r'''\'(?:[^'\\]|\\.)*\'|"(?:[^"\\]|\\.)*"|`[^`]*`''', 'S', b)
+        b = re.sub(r'\b\d+(\.\d+)?\b|\.\d+', 'N', b)
+        return re.sub(r'\s+', '', b)
+
+    keys = list(scenes)
+    normed = {k: norm(k, scenes[k]) for k in keys}
+    dup = set()
+    for i, a in enumerate(keys):
+        for b in keys[i + 1:]:
+            if difflib.SequenceMatcher(None, normed[a], normed[b], autojunk=False).ratio() > .85:
+                dup |= {a, b}
+    if dup:
+        q(f'scenes {sorted(dup)} are near-identical code: each idea needs its own hand-written scene (references/patterns.md §4)')
+    for k in keys:
+        if not MOTION.search(scenes[k]):
+            q(f'SC.{k} uses no interpolation (lerp/ease), maths or clock: it probably just places text in boxes. Pick a pattern from references/patterns.md')
+    if len(ids) >= 10 and len(keys) < 3:
+        q(f'{len(ids)} slides but only {len(keys)} canvas scenes: core concepts should move')
+    if keys and 'class="seg"' not in markup:
+        q('no .seg control anywhere: give at least one scene a parameter or A/B switch to play with in class')
+
+    # -- layouts: one skeleton repeated
+    sig = {}
+    for sid in ids:
+        classes = re.findall(r'class="([^"]+)"', bodies[sid])
+        sig.setdefault(' '.join(classes), []).append(sid)
+    for s, group in sig.items():
+        if len(group) >= 4:
+            q(f'{len(group)} slides share one identical layout skeleton {group}: vary layouts (template library: hook, concept, demo, cards, divider, summary, road)')
+
+    # -- kickers: generic labels reused
+    kick = {}
+    for m in re.finditer(r'class="k"[^>]*>(.*?)</div>', markup, re.S):
+        txt = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+        if txt and '【' not in txt:
+            kick[txt] = kick.get(txt, 0) + 1
+    for txt, n in kick.items():
+        if n >= 3:
+            q(f'kicker "{txt}" used {n} times: kickers should name the content')
+
+    # -- template components left unused
+    if len(ids) >= 6:
+        if 'class="strike"' not in markup:
+            q('no hook strike-through joke (template slide "hook")')
+        if 'data-hl=' not in markup:
+            q('no highlighted summary sentence (template slide "summary", data-hl)')
+        if 'class="road"' not in markup:
+            q('no roadmap (template slide "road")')
+    if len(ids) >= 10 and len(re.findall(r'<section class="slide split"', markup)) < 2:
+        q('no section divider: add a split divider every 4–6 slides')
+
+    # -- Clawd: uniform staging
+    entries = [e for es in cl_entries.values() for e in es]
+    perch_x = {re.search(r'x:([\d.]+)', e).group(1) for e in entries if 'perch:1' in e and re.search(r'x:([\d.]+)', e)}
+    if sum('perch:1' in e for e in entries) >= 8 and len(perch_x) <= 1:
+        q('Clawd perches at the same x on every slide: let it walk a few vw between steps')
+    if len(cl_entries) >= 6 and not any("'sweaty'" in e for e in entries):
+        q("Clawd never sweats: use mood:'sweaty' on the hard steps")
+    lasts = [es[-1] for es in cl_entries.values() if es]
+    same = sum("act:'jump'" in e and "mood:'happy'" in e for e in lasts)
+    if len(lasts) >= 6 and same / len(lasts) >= .7:
+        q(f"{same}/{len(lasts)} slides end with jump + happy: save the jump for the real aha steps")
 
 
 if __name__ == '__main__':
