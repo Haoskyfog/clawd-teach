@@ -11,7 +11,9 @@ assistant) plus a teacher script for every step. The reference implementation
 is `examples/calculus-intro.html`, a 16-slide 高数导论课 for a 专升本 student. Its
 script is `examples/calculus-intro_script.txt`. A shorter second example on a
 programming topic, an 8-slide 二分查找 lesson with a race animation, is
-`examples/binary-search.html` plus its script. When in doubt, do what they do.
+`examples/binary-search.html` plus its script. A third, on an AI topic (RAG), is
+`examples/rag.html` plus `examples/rag_script.txt`: a pipeline, a chunk-size control, an
+embedding map and an open-book/closed-book switch. When in doubt, do what they do.
 
 ## What "the same style" means
 
@@ -34,6 +36,14 @@ programming topic, an 8-slide 二分查找 lesson with a race animation, is
 All the CSS, the Clawd sprite and controller, the deck engine and the background
 are already in `assets/template.html`. Build from it; don't rewrite the engine.
 
+## Read before you plan (required)
+
+Read these before step 2. They are short, and the deck is judged on what's in them:
+1. `references/patterns.md`: the cross-subject animation menu and the one test every demo slide must pass.
+2. `references/scenes.md`: how a scene is wired, plus the pitfalls.
+3. `references/clawd.md`: Clawd's staging and voice.
+4. One worked example, end to end: grep `examples/binary-search.html` (or `examples/rag.html` for a tech topic) for one demo slide's `<section>`, its `SC.<id>=` and its `CL` entry, and read all three.
+
 ## Workflow
 
 ### 1. Pin down the brief
@@ -45,7 +55,18 @@ Extract from the request, and ask only if the topic itself is unclear:
 - **Context worth using.** For example, the teacher's and student's backgrounds can become jokes or examples.
 
 ### 2. Plan the lesson before writing HTML
-Write a short slide list: data-id, layout, the one visual idea, its steps, and Clawd's beat. Typical arc:
+Pick **one running example** that carries the whole lesson (the HR bot's 「年假几天？」 in
+`rag.html`, the pizza and the car in `calculus-intro.html`). Then write the slide list as a
+table and show it in your reply before building (then carry on; don't wait for approval). Columns:
+
+| data-id | layout | pattern (P1–P10) | what moves: step 1 → last step | number that moves | control | Clawd's beat |
+|---|---|---|---|---|---|---|
+
+The "what moves" cell is the sentence from `references/patterns.md` §0. If a demo row's cell
+only describes text appearing or boxes with labels, it isn't a scene yet: go back to the
+pattern menu. Statement and grid slides may write "—".
+
+Typical arc:
 
 | # | slide | layout |
 |---|---|---|
@@ -59,14 +80,16 @@ Write a short slide list: data-id, layout, the one visual idea, its steps, and C
 | 15 | One-sentence summary, keywords highlighted per step | statement |
 | 16 | Roadmap LV.0 → Boss + homework, Clawd waves bye | roadmap |
 
-Adapt it freely. A history lesson's "canvas scene" might be an animated timeline or a map, and a programming lesson's might be an array being sorted step by step. Every core concept gets something that *moves*.
+Adapt it freely. A history lesson's "canvas scene" might be an animated timeline or a map, and a programming lesson's might be an array being sorted step by step. Every core concept gets something that *moves*. `references/patterns.md` §1 lists strong patterns per subject.
 
 ### 3. Build the deck
 1. Copy `assets/template.html` to the output path, `<topic>.html` in the user's working directory. Fill in the `<title>`.
 2. Build slides from the template's slide library: cover, hook, concept, demo, cards, divider, summary and road.
    - Duplicate, reorder and delete them as needed. Each `<section>` needs a unique `data-id`.
    - Read `references/design-system.md` for components, layouts and the fitting rules.
-3. Write a canvas scene `SC.<id>` for each demo slide. Read `references/scenes.md` first.
+3. Write a canvas scene `SC.<id>` for each demo slide, by hand, for that slide's idea.
+   - Never build slides or scenes from a shared generator, loop or factory function. Two concepts never move the same way.
+   - Give at least one scene a `.seg` control (a parameter or an A/B switch) the teacher can play with in class.
    - Delete the template's `SC.demo` if you don't use it.
 4. Write `CL` (Clawd's line, position and act per step) and `QUIPS`. Read `references/clawd.md` for staging and voice.
 5. Replace every 【placeholder】.
@@ -77,7 +100,9 @@ The example deck is ~80 KB. Read the parts you need (grep for a slide's `data-id
 ```bash
 python3 <skill-dir>/scripts/check_deck.py <deck>.html
 ```
-Fix every ERROR. Read each WARN and fix it unless it's intended.
+Fix every ERROR. Read each WARN and fix it. The quality WARNs (duplicate scenes, static
+scenes, repeated layouts, uniform Clawd) are the ones weaker decks trip; if you keep one,
+say why in your reply.
 
 Then look at it in the browser at **1024×576**, and at a wide size if you can.
 - Open the file from inside the project folder, so the pane runs its scripts.
@@ -86,13 +111,22 @@ Then look at it in the browser at **1024×576**, and at a wide size if you can.
 - On every slide's **last step**, check that nothing is clipped, that Clawd's bubble doesn't cover content, and that titles don't wrap into 3 lines.
 - Check the browser console for errors.
 
-### 5. Write the teacher script
+### 5. Self-review
+Before writing the script, fill this table for every slide and show it in your reply:
+
+| slide | what moves (or "—") | the joke / Clawd's beat | memory hook the student keeps |
+|---|---|---|---|
+
+Any demo slide with nothing moving, or any slide with neither a joke nor a hook, gets
+redone, not explained away.
+
+### 6. Write the teacher script
 Write `<topic>_台词.txt` next to the deck in the format of `references/script-format.md`.
 - One section per slide and one block per step.
 - Copy Clawd's lines from `CL`, and include 【互动】 prompts and time estimates.
 - Skip the script only if the user says they don't want one.
 
-### 6. Deliver
+### 7. Deliver
 Give clickable paths to both files. Mention the controls:
 - → / space for next, ← for back.
 - F for fullscreen, H to hide Clawd.
@@ -101,11 +135,24 @@ Give clickable paths to both files. Mention the controls:
 
 Say briefly what you added beyond their outline.
 
+## Anti-patterns (seen in real failed decks)
+
+| don't | do instead |
+|---|---|
+| One scene function reused for every canvas, with different labels | One hand-written `SC.<id>` per idea, from the pattern menu |
+| A canvas of labelled boxes and "↓" arrows | Make the thing travel through the stages (P1), or use DOM and drop the canvas |
+| Generic kickers on every card: `01 · THINK`, `02 · REMEMBER` | Kickers that name the content: `R · Retrieval`, `Example 02 · 微分 → 速度` |
+| The same two-card layout on most slides; summary and roadmap built from cards | Use the template library: hook strike, giant name, divider, `.sum-text` with `data-hl`, `.road` |
+| Clawd at the same x on every slide, every last step `jump + happy` | Move it, sweat on hard steps, shake at wrong answers, jump only on the aha |
+| Hedging in Clawd's voice: 「虚构示例」「可选步骤」「不一定」 | Clawd jokes; precision and caveats go in the teacher script |
+| Writing slides with a Python script that loops over a list | Write each slide; they differ because the ideas differ |
+
 ## Quality bar
 - **Show, don't tell.** If a slide is only text, ask whether an animation could make the point instead.
+- **Fail first, then fix.** Where the concept fixes a problem, show the problem happening (P10) before the fix.
 - **Every number on screen should move toward the answer.** Pick examples where convergence is visible; `references/scenes.md` §5 explains why.
 - **Clawd lines stay short** (≤ ~40 字).
   - Most slides have a punchline. Aha steps get `act:'jump'`, hard steps get `mood:'sweaty'`.
-  - Jokes double as memory hooks.
+  - Jokes double as memory hooks. Call back to the running example.
 - **One accent colour.** Emphasis comes from orange, size and weight 200 vs 400, never from new colours.
 - **It works offline, except for fonts.** Google Fonts falls back to PingFang / system sans if blocked, which is fine in China.
