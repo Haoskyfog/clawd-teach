@@ -42,7 +42,7 @@
 **Claude Code（推荐）**
 
 ```bash
-git clone https://github.com/skyfog/clawd-teach ~/.claude/skills/clawd-teach
+git clone https://github.com/Haoskyfog/clawd-teach ~/.claude/skills/clawd-teach
 ```
 
 装好后，用 `/clawd-teach` 调用。直接说「帮我做个课件讲讲 XX」也会自动触发。
