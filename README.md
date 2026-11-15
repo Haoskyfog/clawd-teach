@@ -4,6 +4,8 @@
 
 *Turn any topic into a single-file, animated HTML lesson in Swiss "Style B", taught by Clawd, a funny pixel teaching assistant, plus a per-step teacher script.*
 
+**👉 在线演示：[jiaoxuetest.pages.dev](https://jiaoxuetest.pages.dev/)**（直接在浏览器里翻页，不用安装）
+
 ![对话开场](docs/screenshots/01-chat.jpg)
 
 ```
@@ -17,6 +19,16 @@
 | ![编程](docs/screenshots/06-programming.jpg) | ![历史](docs/screenshots/07-history.jpg) |
 
 ![任何主题](docs/screenshots/08-topic-wall.jpg)
+
+## 在线演示
+
+三个学科的课件，都是用这个 skill 生成的。打开就能翻页（`→` / 空格 下一步），每页都有实时动画，还有可以点的按钮。
+
+| 学科 | 课件 | 会动的地方 |
+|---|---|---|
+| 科学 | [温室效应](https://jiaoxuetest.pages.dev/greenhouse) | 红外光子被气体分子挡回地面；浴缸排水口变窄，水位涨到新平衡；CO₂ 曲线随年份画出来 |
+| 工程 | [反馈控制](https://jiaoxuetest.pages.dev/feedback) | 定速巡航开上坡：开环掉速、闭环稳住；Kp 太大来回晃；积分把误差补回来 |
+| 金融 | [分散投资](https://jiaoxuetest.pages.dev/diversify) | 60 种十年后的未来，从 1 家店分到 20 家时扇面收拢；雨伞店配防晒店；分不掉的市场风险 |
 
 ## 你会得到
 
