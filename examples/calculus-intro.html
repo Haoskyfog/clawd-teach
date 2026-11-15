@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高等数学 · 导论课 —— 微积分到底在研究什么</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200..700&family=Noto+Sans+SC:wght@200..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<style>
+:root{
+  --sans:'Inter','Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Noto Sans SC',ui-monospace,'SF Mono',Menlo,monospace;
+  --paper:#fafaf8; --grey-1:#f0f0ee; --grey-2:#d4d4d2; --grey-3:#737373;
+  --ink:#0a0a0a; --text-body:#252524; --text-secondary:#525252; --text-helper:#737373;
+  --line:#d4d4d2; --line-strong:#a3a3a3;
+  --accent:#D97757; --accent-ink:#B0502C; --accent-on:#ffffff; --accent-on-rgb:255,255,255;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-page:cubic-bezier(.77,0,.175,1); --pop:cubic-bezier(.34,1.56,.64,1);
+  --cw:min(6.4vw,11.4vh);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+#deck{position:relative;z-index:1;display:flex;height:100vh;transition:transform 1s var(--ease-page);will-change:transform}
+.slide{flex:0 0 100vw;width:100vw;height:100vh;position:relative;padding:5.6vh 5vw 6vh;display:flex;flex-direction:column;overflow:hidden}
+.chrome{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:max(14px,.78vw);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text-helper);padding-bottom:1.5vh;border-bottom:1px solid var(--line);flex:none}
+.chrome .pg{color:var(--ink)}
+.main{flex:1;min-height:0;position:relative;padding-top:4.6vh;display:flex;flex-direction:column}
+
+/* type */
+.k{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-ink)}
+.h1x{font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1.04;letter-spacing:-.02em}
+.h2x{font-weight:300;font-size:min(3.3vw,5.9vh);line-height:1.15;letter-spacing:-.015em}
+.h3x{font-weight:400;font-size:max(20px,min(1.7vw,3.1vh));line-height:1.3;letter-spacing:-.01em}
+.p{font-size:max(18px,1.1vw);line-height:1.65;font-weight:400;color:var(--text-body)}
+.ps{font-size:max(16px,.96vw);line-height:1.6;font-weight:500;color:var(--text-secondary)}
+.mono{font-family:var(--mono)}
+.acc{color:var(--accent-ink)}
+.b{font-weight:600}
+.sm-note{font-size:max(16px,.92vw);color:var(--text-helper);font-weight:500}
+
+/* reveal */
+[data-s]{opacity:0;transform:translate3d(0,18px,0);transition:opacity .7s var(--ease) var(--dl,0s),transform .9s var(--ease) var(--dl,0s)}
+[data-s].on{opacity:1;transform:none}
+[data-s][data-fx=left]{transform:translate3d(-28px,0,0)}
+[data-s][data-fx=right]{transform:translate3d(28px,0,0)}
+[data-s][data-fx=pop]{transform:scale(.4) rotate(-6deg);transition:opacity .35s var(--ease) var(--dl,0s),transform .6s var(--pop) var(--dl,0s)}
+[data-s][data-fx=fade]{transform:none}
+[data-s].on[data-fx]{transform:none}
+.gone{opacity:0!important;transform:translate3d(0,-12px,0)!important;pointer-events:none}
+.noanim,.noanim *{transition:none!important}
+
+/* components */
+.card{background:var(--grey-1);padding:2.6vh 1.7vw}
+.card-ink{background:var(--ink);color:var(--paper);padding:2.6vh 1.7vw}
+.card-acc{background:var(--accent);color:var(--accent-on);padding:2.6vh 1.7vw}
+.rule{border-top:1px solid var(--line)}
+.tag{display:inline-block;font-family:var(--mono);font-size:max(14px,.76vw);font-weight:600;letter-spacing:.12em;padding:.25em .6em;background:var(--ink);color:var(--paper);vertical-align:middle}
+.tag.a{background:var(--accent);color:var(--accent-on)}
+.sq{display:inline-block;width:.42em;height:.42em;background:var(--accent);vertical-align:middle;margin-right:.5em}
+
+.steps-list{list-style:none;display:flex;flex-direction:column}
+.steps-list li{display:grid;grid-template-columns:3.2em 1fr;gap:1vw;padding:1.1vh 0 1.1vh .9vw;align-items:center;border-top:1px solid var(--line);position:relative}
+.steps-list li::before{content:'';position:absolute;left:0;top:-1px;bottom:0;width:3px;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease)}
+.steps-list li.cur::before{transform:scaleY(1)}
+.steps-list .n{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:600;color:var(--text-helper);padding-top:.35em}
+.steps-list li.cur .n{color:var(--accent-ink)}
+
+.ro{display:grid;grid-template-columns:auto 1fr;column-gap:1.2vw;border-top:1px solid var(--ink)}
+.ro>div{padding:1.1vh 0;border-bottom:1px solid var(--line)}
+.ro .l{font-size:max(16px,.92vw);color:var(--text-secondary);font-weight:500}
+.ro .v{font-family:var(--mono);font-size:max(18px,1.25vw);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+
+.seg{display:flex;align-items:center;gap:0;font-family:var(--mono);font-size:max(14px,.78vw)}
+.seg .lab{color:var(--text-helper);margin-right:.8em;letter-spacing:.08em}
+.seg button{font:inherit;font-weight:600;background:transparent;border:1px solid var(--ink);margin-left:-1px;padding:.45em .8em;cursor:pointer;color:var(--ink)}
+.seg button.sel{background:var(--ink);color:var(--paper)}
+.seg button.go{background:var(--accent);border-color:var(--accent);color:var(--accent-on);margin-left:1em}
+.seg button:hover{outline:2px solid var(--accent);outline-offset:-2px}
+
+canvas.cv{display:block;width:100%;height:100%}
+
+/* split slides */
+.slide.split{padding:0;flex-direction:row}
+.half{height:100%;padding:5.6vh 3.6vw 6vh;display:flex;flex-direction:column;position:relative}
+.half.acc{background:var(--accent);color:var(--accent-on)}
+.half.acc .chrome{color:rgba(var(--accent-on-rgb),.8);border-color:rgba(var(--accent-on-rgb),.35)}
+.half.acc .chrome .pg{color:var(--accent-on)}
+.half.acc .k{color:rgba(var(--accent-on-rgb),.85)}
+
+/* joke */
+.eq-row{display:flex;align-items:baseline;gap:1.6vw;flex-wrap:wrap}
+.strike-wrap{position:relative;display:inline-block}
+.strike{position:absolute;left:-3%;right:-3%;top:50%;height:.09em;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease)}
+.strike.on{transform:scaleX(1)}
+.stamp{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:var(--accent-on);font-weight:500;font-size:min(2.6vw,4.6vh);padding:.35em .7em;letter-spacing:.02em}
+
+/* calculus */
+.giant{font-weight:200;font-size:min(10vw,17vh);line-height:.95;letter-spacing:-.04em}
+.arrow-r{font-weight:200;font-size:min(6vw,10vh);color:var(--accent-ink);line-height:1}
+
+/* idea slices */
+.bar{display:flex;height:9vh;width:100%;gap:0;transition:gap .9s var(--ease)}
+.bar i{flex:1;background:var(--ink);transition:transform .9s var(--ease) calc(var(--j)*35ms),background .5s}
+.bar.cut.on{gap:.55vw}
+.bar.cut.on i:nth-child(odd){background:var(--accent)}
+.bar.cut.on i{transform:translateY(calc(sin(var(--j)*1rad)*1.6vh))}
+.bar.join i{transform:translateY(calc(var(--r)*1vh)) rotate(calc(var(--r)*4deg));background:var(--accent)}
+.bar.join{gap:.55vw}
+.bar.join.on{gap:0}
+.bar.join.on i{transform:none;background:var(--ink)}
+
+/* network */
+.net line{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .9s var(--ease) var(--dl,0s)}
+.net.on line{stroke-dashoffset:0}
+.net .nd{opacity:0;transition:opacity .5s var(--ease) calc(var(--dl,0s) + .5s)}
+.net.on .nd{opacity:1}
+.net text{font-family:var(--sans);font-size:19px;font-weight:500;fill:var(--ink)}
+
+/* summary highlights */
+.hl{position:relative;display:inline-block;padding:0 .12em;transition:color .5s var(--ease)}
+.hl::before{content:'';position:absolute;inset:.08em 0 .02em;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease);z-index:-1}
+.hl.lit{color:var(--accent-on)}
+.hl.lit::before{transform:scaleX(1)}
+.sum-text{position:relative;z-index:0}
+.dim-word{color:var(--text-helper);font-weight:300}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.road .node{border-top:3px solid var(--grey-2);padding-top:2vh;padding-right:1.4vw;transition:border-color .6s}
+.road .node.on{border-color:var(--ink)}
+.road .node.here{border-color:var(--accent)}
+.road .num{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:600;color:var(--text-helper)}
+.road .nm{font-weight:300;font-size:min(2.6vw,4.6vh);margin-top:.6vh}
+
+/* clawd */
+#clawd{position:fixed;left:0;top:0;width:0;height:0;z-index:50;transform:translate3d(110vw,90vh,0);transition:transform 1.15s cubic-bezier(.65,0,.35,1);pointer-events:none;--s:1}
+#clawd svg{position:absolute;bottom:0;left:calc(var(--cw)*var(--s)/-2);width:calc(var(--cw)*var(--s));height:calc(var(--cw)*var(--s)*.6);overflow:visible;pointer-events:auto;cursor:pointer;transition:width .9s var(--ease),height .9s var(--ease),left .9s var(--ease);transform-origin:50% 100%}
+#clawd .c-all{animation:idle 2.6s ease-in-out infinite}
+#clawd .eyes rect{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+#clawd .look{transition:transform .5s var(--ease)}
+#clawd.walk .la{animation:legA .28s steps(1) infinite}
+#clawd.walk .lb{animation:legA .28s steps(1) infinite reverse;animation-delay:-.14s}
+#clawd.walk .c-all{animation:bob .28s ease-in-out infinite}
+#clawd svg.jump{animation:jump .7s var(--ease)}
+#clawd svg.shake{animation:shake .5s linear}
+#clawd.wave .ar{animation:wave .32s ease-in-out 6 alternate}
+#clawd .sweat{opacity:0;transition:opacity .3s}
+#clawd.sweaty .sweat{opacity:1;animation:drip 1.2s ease-in infinite}
+#clawd .blush{opacity:0;transition:opacity .4s}
+#clawd.happy .blush{opacity:1}
+#clawd.happy .eyes rect{animation:none;transform:scaleY(.35)}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-.35px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-.5px)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes legA{0%{transform:translateY(-.9px)}50%{transform:translateY(0)}}
+@keyframes jump{0%{transform:scale(1.1,.85)}30%{transform:translateY(-55%) scale(.92,1.1)}60%{transform:translateY(0) scale(1.12,.86)}80%{transform:scale(.97,1.04)}100%{transform:none}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6%) rotate(-4deg)}40%{transform:translateX(6%) rotate(4deg)}60%{transform:translateX(-4%) rotate(-2deg)}80%{transform:translateX(3%)}}
+@keyframes wave{to{transform:translateY(-2.2px)}}
+@keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(2.5px);opacity:0}}
+.bubble{position:absolute;bottom:calc(var(--cw)*var(--s)*.6 + 18px);left:calc(var(--cw)*var(--s)*.12);width:max-content;max-width:min(25vw,380px);background:var(--paper);border:1.5px solid var(--ink);padding:.7em 1em;font-size:max(16px,.98vw);line-height:1.5;font-weight:500;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity .35s var(--ease),transform .45s var(--ease),bottom .9s var(--ease),left .9s var(--ease),right .9s var(--ease);pointer-events:none}
+.bubble::after{content:'';position:absolute;bottom:-7.5px;left:20px;width:12px;height:12px;background:var(--paper);border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg)}
+#clawd.side-l .bubble{left:auto;right:calc(var(--cw)*var(--s)*.12)}
+#clawd.side-l .bubble::after{left:auto;right:20px}
+.bubble.show{opacity:1;transform:none}
+#clawd.bside .bubble{bottom:1px;left:calc(var(--cw)*var(--s)*.5 + 16px);right:auto;max-width:min(40vw,600px);transform:translateX(-10px)}
+#clawd.bside.side-l .bubble{left:auto;right:calc(var(--cw)*var(--s)*.5 + 16px);transform:translateX(10px)}
+#clawd.bside .bubble.show{transform:none}
+#clawd.bside .bubble::after{left:-7.5px;right:auto;bottom:10px;transform:rotate(135deg)}
+#clawd.bside.side-l .bubble::after{left:auto;right:-7.5px;transform:rotate(-45deg)}
+.bubble .cursor{display:inline-block;width:.5em;height:1em;background:var(--accent);vertical-align:-.12em;margin-left:2px;animation:cur .8s steps(1) infinite}
+@keyframes cur{50%{opacity:0}}
+#clawd.hidden{opacity:0;transition:opacity .4s}
+
+/* footer */
+#prog{position:fixed;left:0;bottom:0;height:3px;background:var(--accent);z-index:60;transition:width .8s var(--ease);width:0}
+#foot .hint{transition:opacity .5s}
+body:not(.first) #foot .hint{opacity:0}
+#foot{position:fixed;left:50%;transform:translateX(-50%);bottom:1.6vh;z-index:60;display:flex;align-items:center;gap:1.2vw;font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text-helper);letter-spacing:.06em}
+#foot .dots{display:flex;gap:5px}
+#foot .dots i{width:8px;height:8px;background:var(--grey-2);transition:background .3s}
+#foot .dots i.on{background:var(--ink)}
+#foot .dots i.cur{background:var(--accent)}
+body.on-acc #foot{color:rgba(255,255,255,.85)}
+body.on-acc #foot .dots i{background:rgba(255,255,255,.4)}
+body.on-acc #foot .dots i.on{background:#fff}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div id="deck">
+
+<!-- 01 COVER -->
+<section class="slide split" data-id="cover">
+  <div class="half acc" style="width:58%">
+    <div class="chrome"><span>高等数学 · 导论 / Lecture 00</span><span class="pg"></span></div>
+    <div class="main" style="justify-content:space-between">
+      <div class="k" data-s="0" style="--dl:.1s">Advanced Mathematics · Calculus 101</div>
+      <div>
+        <h1 data-s="0" style="--dl:.25s;font-weight:200;font-size:min(9.4vw,16.5vh);line-height:.98;letter-spacing:-.03em">高等数学</h1>
+        <div data-s="0" style="--dl:.4s;font-weight:300;font-size:min(4.2vw,7.4vh);line-height:1.1;margin-top:1.5vh">导论课 · <span style="font-weight:400">从一块披萨开始</span></div>
+      </div>
+      <div data-s="0" style="--dl:.55s;border-top:1px solid rgba(255,255,255,.35);padding-top:2vh;display:flex;justify-content:space-between;align-items:end;gap:2vw">
+        <div class="p" style="color:rgba(255,255,255,.92);max-width:36ch">微积分到底在研究什么？为什么大学里人人都要学它？今天不算题，只聊天。</div>
+        
+      </div>
+    </div>
+  </div>
+  <div class="half" style="width:42%">
+    <div class="chrome"><span>Teaching Assistant</span><span>CLAWD · 助教</span></div>
+    <div class="main" style="justify-content:flex-end">
+      <div data-s="0" style="--dl:.9s" class="ps">本节课助教：Clawd<br><span class="sm-note">特长：眨眼、蹦跶、偶尔讲冷笑话</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 JOKE -->
+<section class="slide" data-id="joke">
+  <div class="chrome"><span>Part 01 · 高数是什么</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Question 01 · 先猜一猜</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:2vh">「高数」，到底是什么？</h2>
+    <div style="margin-top:9vh" class="eq-row" data-s="1">
+      <span class="h2x">高等数学</span>
+      <span class="h2x" style="color:var(--text-helper)">=</span>
+      <span class="strike-wrap h2x">更高级的数学<span class="strike" data-s="2"></span></span>
+      <span class="ps" data-s="1" style="--dl:.3s">（字面意思，没毛病吧？）</span>
+    </div>
+    <div style="margin-top:5vh;display:flex;align-items:center;gap:2vw">
+      <div class="stamp" data-s="2" data-fx="pop" style="--dl:.35s">✗ 开玩笑的</div>
+      <div class="p" data-s="2" style="--dl:.6s;max-width:44ch">虽然它确实比高中数学「高级」那么一丢丢……但这个名字其实什么都没告诉你。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 CALCULUS -->
+<section class="slide" data-id="calc">
+  <div class="chrome"><span>Part 01 · 高数是什么</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">The Real Name · 它的真名</div>
+    <div style="display:flex;align-items:baseline;gap:2.4vw;margin-top:1.5vh">
+      <span class="giant" data-s="0" style="--dl:.1s">Calculus</span>
+      <span class="arrow-r" data-s="1" data-fx="left">→</span>
+      <span class="giant" data-s="1" data-fx="left" style="--dl:.15s;font-size:min(8.4vw,15vh);color:var(--accent-ink)">微积分</span>
+    </div>
+    <div class="ps" data-s="0" style="--dl:.3s;margin-top:1.6vh;max-width:62ch"><span class="sq"></span>冷知识：calculus 在拉丁语里是「小石子」。古罗马人用小石子来计数——顺便一提，医生说的「结石」也叫 calculus。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2vw;margin-top:4.5vh;max-width:78vw">
+      <div class="card" data-s="2"><div class="k" style="color:var(--text-helper)">Differential</div><div class="h2x" style="margin:.8vh 0 1vh">微分 <span class="acc" style="font-weight:400">= 切</span></div><div class="ps">把一个整体切成无数个极小的部分，看「局部」是怎么变化的。</div></div>
+      <div class="card" data-s="2" style="--dl:.15s"><div class="k" style="color:var(--text-helper)">Integral</div><div class="h2x" style="margin:.8vh 0 1vh">积分 <span class="acc" style="font-weight:400">= 拼</span></div><div class="ps">把无数个极小的部分加起来，得到「整体」到底有多少。</div></div>
+    </div>
+    <div data-s="3" style="margin-top:3.4vh;border-left:4px solid var(--accent);padding-left:1.2vw;max-width:72vw" class="h3x">微积分 = 研究「微分」和「积分」的一种<b class="acc" style="font-weight:600">形而上学</b>——一套看世界的方法。</div>
+  </div>
+</section>
+
+<!-- 04 CIRCLE -->
+<section class="slide" data-id="circle">
+  <div class="chrome"><span>Part 02 · 最基本的思想</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:3vw">
+    <div style="width:31%;display:flex;flex-direction:column">
+      <div class="k" data-s="0">Example 01 · 圆的面积</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh">圆的面积，<br>凭什么是 πr²？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin:1.4vh 0 2vh">圆是弯的，没法「长 × 宽」。那就……当披萨切了！</p>
+      <ol class="steps-list">
+        <li data-s="1"><span class="n">01</span><span class="p" style="white-space:nowrap"><b>切</b> 成 8 块 <span class="tag">微分</span></span></li>
+        <li data-s="2"><span class="n">02</span><span class="p" style="white-space:nowrap"><b>拼</b> 一正一倒 <span class="tag">积分</span></span></li>
+        <li data-s="3"><span class="n">03</span><span class="p">越切越细，边越直</span></li>
+        <li data-s="4"><span class="n">04</span><span class="p">无限细 → 长方形</span></li>
+      </ol>
+      <div data-s="5" class="card-acc" style="margin-top:1.8vh;padding:1.8vh 1.4vw"><div class="mono" style="font-size:14px;letter-spacing:.14em;opacity:.9">面积 = 宽 × 高</div><div style="font-weight:300;font-size:min(2.8vw,5vh);margin-top:.6vh">S = πr · r = πr²</div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <div style="flex:1;min-height:0"><canvas class="cv" id="cv-circle"></canvas></div>
+      <div class="seg" id="circle-ctl" data-s="1" style="justify-content:flex-end;margin-top:1vh">
+        <span class="lab">切成</span>
+        <button data-n="4">4</button><button data-n="8">8</button><button data-n="16">16</button><button data-n="32">32</button><button data-n="64">64</button><button data-n="128">128</button>
+        <span class="lab" style="margin-left:.8em">块</span>
+        <button class="go" data-t="1">拼 / 还原</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 IDEA -->
+<section class="slide" data-id="idea">
+  <div class="chrome"><span>Part 02 · 最基本的思想</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Core Idea · 一拆一拼</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.6vh">刚才那块披萨，<br>就是微积分的全部灵魂。</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4vw;margin-top:5.5vh;max-width:82vw">
+      <div data-s="1">
+        <div class="k" style="color:var(--text-helper)">Differential · 微分</div>
+        <div class="h2x" style="margin:1vh 0 2vh">化整为零</div>
+        <div class="bar cut" data-s="1" data-fx="fade" style="--dl:.3s"><i style="--j:0"></i><i style="--j:1"></i><i style="--j:2"></i><i style="--j:3"></i><i style="--j:4"></i><i style="--j:5"></i><i style="--j:6"></i><i style="--j:7"></i><i style="--j:8"></i><i style="--j:9"></i><i style="--j:10"></i><i style="--j:11"></i><i style="--j:12"></i><i style="--j:13"></i></div>
+        <p class="ps" style="margin-top:2vh">切到足够小，<b class="acc">弯的 ≈ 直的</b>，<b class="acc">变的 ≈ 不变的</b>。复杂问题瞬间变成小学题。</p>
+      </div>
+      <div data-s="2">
+        <div class="k" style="color:var(--text-helper)">Integral · 积分</div>
+        <div class="h2x" style="margin:1vh 0 2vh">积零为整</div>
+        <div class="bar join" data-s="2" data-fx="fade" style="--dl:.3s"><i style="--j:0;--r:-2"></i><i style="--j:1;--r:1.5"></i><i style="--j:2;--r:-1"></i><i style="--j:3;--r:2.5"></i><i style="--j:4;--r:-2.5"></i><i style="--j:5;--r:1"></i><i style="--j:6;--r:-1.5"></i><i style="--j:7;--r:2"></i><i style="--j:8;--r:-.5"></i><i style="--j:9;--r:1.8"></i><i style="--j:10;--r:-2.2"></i><i style="--j:11;--r:.8"></i><i style="--j:12;--r:-1.2"></i><i style="--j:13;--r:2.2"></i></div>
+        <p class="ps" style="margin-top:2vh">把无数个小块<b class="acc">加回去</b>，得到整体的面积、路程、总量……</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 S-T DERIVATIVE -->
+<section class="slide" data-id="st">
+  <div class="chrome"><span>Part 03 · 从图形到函数</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:3vw">
+    <div style="width:29%;display:flex;flex-direction:column">
+      <div class="k" data-s="0">Example 02 · 微分 → 速度</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh">这车，<br>此刻开多快？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1.4vh">右图：一辆车的位置 s 随时间 t 变化。慢慢起步 → 猛踩油门 → 急刹车。</p>
+      <div style="display:grid;margin-top:2.4vh">
+        <div data-s="1" data-until="2" style="grid-area:1/1">
+          <div class="ro">
+            <div class="l">时间间隔 Δt</div><div class="v"><span id="st-dt">5.00</span> s</div>
+            <div class="l">走过的路 Δs</div><div class="v"><span id="st-ds">0.0</span> m</div>
+            <div class="l">平均速度 Δs/Δt</div><div class="v acc"><span id="st-av">0.0</span> m/s</div>
+          </div>
+          <p class="ps" data-s="2" style="margin-top:1.4vh"><span class="sq"></span>Δt → 0，割线慢慢变成<b class="acc">切线</b></p>
+        </div>
+        <div data-s="3" class="card-ink" style="grid-area:1/1;align-self:start">
+          <div class="mono" style="font-size:14px;letter-spacing:.06em;color:#bbb">瞬时速度 = 切线斜率 = 导数 s′(t)</div>
+          <div style="font-weight:300;font-size:min(2.2vw,4vh);margin-top:.8vh;font-variant-numeric:tabular-nums">t = <span id="st-t">0.0</span> s</div>
+          <div style="font-weight:300;font-size:min(2.2vw,4vh);font-variant-numeric:tabular-nums">v = <span id="st-v" style="color:var(--accent)">0.0</span> m/s</div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0" data-s="0" data-fx="fade" ><canvas class="cv" id="cv-st"></canvas></div>
+  </div>
+</section>
+
+<!-- 07 V-T INTEGRAL -->
+<section class="slide" data-id="vt">
+  <div class="chrome"><span>Part 03 · 从图形到函数</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:3vw">
+    <div style="width:29%;display:flex;flex-direction:column">
+      <div class="k" data-s="0">Example 03 · 积分 → 路程</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh">反过来：<br>它一共跑了多远？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1.4vh">里程表坏了，只剩速度表 v(t) 能看。总路程怎么算？</p>
+      <div style="display:grid;margin-top:2.2vh">
+        <div data-s="1" data-until="2" style="grid-area:1/1">
+          <p class="ps" style="margin-bottom:1.2vh">每一小段里速度几乎不变：路程 ≈ <b class="acc">v × Δt</b> = 一根细长条的面积</p>
+          <div class="ro">
+            <div class="l">切成几段</div><div class="v"><span id="vt-n">5</span> 段</div>
+            <div class="l">长条面积之和</div><div class="v acc">≈ <span id="vt-sum">0.00</span> m</div>
+          </div>
+        </div>
+        <div data-s="3" style="grid-area:1/1;align-self:start">
+          <div class="card-acc">
+            <div class="mono" style="font-size:14px;letter-spacing:.06em;opacity:.92">曲线下的面积 = 路程 = 积分</div>
+            <div style="font-weight:300;font-size:min(2.1vw,3.8vh);margin-top:.6vh">∫₀¹⁰ v(t) dt = 83.33 m</div>
+          </div>
+          <div data-s="4" style="margin-top:1.8vh;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:.6vw" class="ps">
+            <b style="color:var(--ink)">位置 s</b>
+            <div style="text-align:center;font-family:var(--mono);font-size:14px;line-height:1.6"><span class="acc">— 求导 →</span><br><span>← 积分 —</span></div>
+            <b style="color:var(--ink)">速度 v</b>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0" data-s="0" data-fx="fade"><canvas class="cv" id="cv-vt"></canvas></div>
+  </div>
+</section>
+
+<!-- 08 ARC -->
+<section class="slide" data-id="arc">
+  <div class="chrome"><span>Part 03 · 从图形到函数</span><span class="pg"></span></div>
+  <div class="main">
+    <div>
+      <div class="k" data-s="0">Example 04 · 曲线的长度</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh;white-space:nowrap">山路十八弯，到底有多长？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1vh">直尺量不了弯路。那就——用一小段一小段的<b class="acc">直线</b>去凑它。</p>
+    </div>
+    <div style="flex:1;min-height:0;margin-top:2vh" data-s="0" data-fx="fade"><canvas class="cv" id="cv-arc"></canvas></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;max-width:70vw" data-s="1">
+      <div class="ro" style="grid-template-columns:1fr auto"><div class="l">直线段数 n</div><div class="v"><span id="arc-n">3</span></div></div>
+      <div class="ro" style="grid-template-columns:1fr auto"><div class="l">折线总长</div><div class="v acc"><span id="arc-L">0.00</span> km</div></div>
+      <div class="ro" style="grid-template-columns:1fr auto"><div class="l">真实弧长</div><div class="v"><span id="arc-T">0.00</span> km</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 APPS -->
+<section class="slide" data-id="apps">
+  <div class="chrome"><span>Part 04 · 它有什么用</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Everywhere · 无处不在</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh;font-size:min(4.6vw,8.2vh)">微积分：不只是数学课的事</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;margin-top:4vh;flex:1;min-height:0;max-height:58vh">
+      <div class="card" data-s="1" style="display:flex;flex-direction:column">
+        <div class="k" style="color:var(--text-helper)">Business · 商科</div>
+        <div class="h3x" style="margin:.8vh 0">老板最爱的导数</div>
+        <div style="flex:1;min-height:12vh"><canvas class="cv" id="cv-biz"></canvas></div>
+        <p class="ps" style="margin-top:1vh">边际成本、边际收益 = 导数。导数为 0 的地方，利润最大。总收入 = 每天收入的积分。</p>
+      </div>
+      <div class="card" data-s="2" style="display:flex;flex-direction:column">
+        <div class="k" style="color:var(--text-helper)">Engineering · 工程学</div>
+        <div class="h3x" style="margin:.8vh 0">桥会不会塌？</div>
+        <div style="flex:1;min-height:12vh"><canvas class="cv" id="cv-eng"></canvas></div>
+        <p class="ps" style="margin-top:1vh">把桥切成无数小段，算每一段的受力，再积分成整座桥的变形。电路、水坝、火箭，同理。</p>
+      </div>
+      <div class="card" data-s="3" style="display:flex;flex-direction:column">
+        <div class="k" style="color:var(--text-helper)">Computer Science · 计算机</div>
+        <div class="h3x" style="margin:.8vh 0">AI 是怎么学会的？</div>
+        <div style="flex:1;min-height:12vh"><canvas class="cv" id="cv-cs"></canvas></div>
+        <p class="ps" style="margin-top:1vh">梯度下降：沿着导数的反方向，一步一步「下山」找最优解。游戏物理引擎、动画曲线也全靠它。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 IMPORTANT -->
+<section class="slide" data-id="important">
+  <div class="chrome"><span>Part 04 · 它有什么用</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:4vw;align-items:center">
+    <div style="width:46%">
+      <div class="k" data-s="0">Why It Matters</div>
+      <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.6vh;font-size:min(4.8vw,8.6vh)">大学里的<br><span class="acc" style="font-weight:300">「基础设施」</span></h2>
+      <p class="p" data-s="0" style="--dl:.25s;margin-top:3vh;max-width:34ch">物理、经济、统计、机器学习……几乎每一门理工商专业课，都默认你已经会了它。</p>
+      <div class="card-ink" data-s="2" style="margin-top:4vh;max-width:36ch"><div class="h3x">它不只是一门课，<br>更是一种<span style="color:var(--accent)">理解世界的语言</span>。</div><div class="mono" style="font-size:14px;margin-top:1.4vh;color:#aaa;letter-spacing:.06em">牛顿 & 莱布尼茨 · 17 世纪 · 用它写下了运动定律</div></div>
+    </div>
+    <div style="flex:1;height:100%;min-width:0;display:flex;align-items:center;justify-content:center">
+      <svg class="net" data-s="1" data-fx="fade" viewBox="0 0 600 520" style="width:100%;max-height:72vh">
+        <g>
+          <line x1="300" y1="260" x2="300" y2="60" pathLength="1" style="--dl:0s"/>
+          <line x1="300" y1="260" x2="490" y2="135" pathLength="1" style="--dl:.1s"/>
+          <line x1="300" y1="260" x2="520" y2="320" pathLength="1" style="--dl:.2s"/>
+          <line x1="300" y1="260" x2="400" y2="470" pathLength="1" style="--dl:.3s"/>
+          <line x1="300" y1="260" x2="185" y2="470" pathLength="1" style="--dl:.4s"/>
+          <line x1="300" y1="260" x2="80" y2="320" pathLength="1" style="--dl:.5s"/>
+          <line x1="300" y1="260" x2="105" y2="130" pathLength="1" style="--dl:.6s"/>
+        </g>
+        <g class="nd" style="--dl:0s"><rect x="250" y="38" width="100" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="300" y="67" text-anchor="middle">物理学</text></g>
+        <g class="nd" style="--dl:.1s"><rect x="440" y="113" width="100" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="490" y="142" text-anchor="middle">经济学</text></g>
+        <g class="nd" style="--dl:.2s"><rect x="460" y="298" width="120" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="520" y="327" text-anchor="middle">机器学习</text></g>
+        <g class="nd" style="--dl:.3s"><rect x="350" y="448" width="100" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="400" y="477" text-anchor="middle">统计学</text></g>
+        <g class="nd" style="--dl:.4s"><rect x="125" y="448" width="120" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="185" y="477" text-anchor="middle">工程力学</text></g>
+        <g class="nd" style="--dl:.5s"><rect x="20" y="298" width="120" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="80" y="327" text-anchor="middle">医学影像</text></g>
+        <g class="nd" style="--dl:.6s"><rect x="45" y="108" width="120" height="44" fill="#fafaf8" stroke="#0a0a0a"/><text x="105" y="137" text-anchor="middle">金融会计</text></g>
+        <g><rect x="225" y="226" width="150" height="68" fill="#D97757"/><text x="300" y="269" text-anchor="middle" style="fill:#fff;font-size:26px;font-weight:400">微积分</text></g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- 11 DIVIDER -->
+<section class="slide split" data-id="divider">
+  <div class="half acc" style="width:58%">
+    <div class="chrome"><span>Part 05</span><span class="pg"></span></div>
+    <div class="main" style="justify-content:space-between">
+      <div class="k" data-s="0" style="--dl:.1s">Section · Limit</div>
+      <div>
+        <div data-s="0" style="--dl:.2s;font-weight:200;font-size:min(13vw,22vh);line-height:.9;letter-spacing:-.04em">05</div>
+        <h2 data-s="0" style="--dl:.35s;font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1.05;margin-top:2vh">为什么需要<br><span style="font-weight:400">极限</span>？</h2>
+      </div>
+      <p class="p" data-s="1" style="color:rgba(255,255,255,.92);border-top:1px solid rgba(255,255,255,.35);padding-top:2vh;max-width:40ch">前面我们一直在说「切得无限细」。可是——到底要切多细？细到什么程度才算够？</p>
+    </div>
+  </div>
+  <div class="half" style="width:42%">
+    <div class="chrome"><span>Limit</span><span>lim</span></div>
+  </div>
+</section>
+
+<!-- 12 AIR -->
+<section class="slide" data-id="air">
+  <div class="chrome"><span>Part 05 · 为什么需要极限</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:2.6vw">
+    <div style="width:27%;display:flex;flex-direction:column">
+      <div class="k" data-s="0">Example 05 · 教室里的空气</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh">教室里的空气，<br>均匀吗？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1.4vh">冷空气下沉，暖气边空气稀，后排还有同学在打呼噜……流体力学第一步：切。</p>
+      <ol class="steps-list" style="margin-top:2vh">
+        <li data-s="1"><span class="n">2×1</span><span class="ps">切太大：有挤有空 <b class="acc">✗</b></span></li>
+        <li data-s="2"><span class="n">6×3</span><span class="ps">约 1 m³：还是不匀 <b class="acc">✗</b></span></li>
+        <li data-s="3"><span class="n">→∞</span><span class="ps">足够小：<b>几乎均匀</b> <b class="acc">✓</b></span></li>
+      </ol>
+      <div data-s="4" class="card-ink" style="margin-top:1.6vh;padding:1.8vh 1.4vw">
+        <div class="mono" style="font-size:14px;color:#bbb">总质量 = 每块（密度×体积）之和</div>
+        <div style="font-weight:300;font-size:min(1.9vw,3.4vh);margin-top:.6vh">Σ ρ·ΔV <span style="color:var(--accent)">→</span> ∫ ρ dV <span class="mono" style="font-size:14px;color:#bbb">(ΔV→0)</span></div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0" data-s="0" data-fx="fade"><canvas class="cv" id="cv-air"></canvas></div>
+  </div>
+</section>
+
+<!-- 13 LIMIT -->
+<section class="slide" data-id="limit">
+  <div class="chrome"><span>Part 05 · 为什么需要极限</span><span class="pg"></span></div>
+  <div class="main">
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:3vw">
+      <div>
+        <div class="k" data-s="0">Limit · 极限</div>
+        <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh;font-size:min(4.6vw,8.2vh)">无限接近 0，<br>但<span class="acc" style="font-weight:300">永远不等于 0</span>。</h2>
+      </div>
+      <div data-s="2" data-fx="pop" style="text-align:right;margin-right:11vw">
+        <div style="font-weight:200;font-size:min(6vw,10.6vh);line-height:1">lim</div>
+        <div class="mono" style="font-size:max(16px,1vw);margin-top:.4vh">Δx → 0</div>
+      </div>
+    </div>
+    <div style="height:19vh;margin-top:2.4vh;position:relative" data-s="1" data-fx="fade">
+      <canvas class="cv" id="cv-lim"></canvas>
+    </div>
+    <div class="mono" data-s="1" style="font-size:max(18px,1.2vw);margin-top:.4vh">Δx = <span id="lim-v" class="acc" style="font-weight:600">1</span> <span style="color:var(--text-helper)">≠ 0</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1vw;margin-top:3vh;max-width:84vw">
+      <div class="card" data-s="3"><div class="k" style="color:var(--text-helper)">圆的面积</div><div class="h3x" style="margin-top:.6vh">块数 n → ∞</div></div>
+      <div class="card" data-s="3" style="--dl:.12s"><div class="k" style="color:var(--text-helper)">瞬时速度</div><div class="h3x" style="margin-top:.6vh">Δt → 0</div></div>
+      <div class="card" data-s="3" style="--dl:.24s"><div class="k" style="color:var(--text-helper)">曲线长度</div><div class="h3x" style="margin-top:.6vh">每段长 → 0</div></div>
+      <div class="card-acc" data-s="3" style="--dl:.36s"><div class="k" style="color:#fff">教室空气</div><div class="h3x" style="margin-top:.6vh">ΔV → 0</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 USES -->
+<section class="slide" data-id="uses">
+  <div class="chrome"><span>Part 05 · 为什么需要极限</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">So What · 极限有什么用</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh;font-size:min(4.6vw,8.2vh)">你每天都在被极限「照顾」</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1.2vw;margin-top:3vh;max-width:86vw">
+      <div class="card" data-s="1"><div class="k" style="color:var(--text-helper)">交通 · 测速</div><div class="h3x" style="margin:.8vh 0">区间测速 vs 雷达测速</div><p class="ps">区间测速算的是<b>平均速度</b>；路边的雷达测的是 Δt 极小时的<b class="acc">瞬时速度</b>。超速了两种都跑不掉。</p></div>
+      <div class="card" data-s="2"><div class="k" style="color:var(--text-helper)">流体 · 天气与飞机</div><div class="h3x" style="margin:.8vh 0">把空气切成几百万个小格</div><p class="ps">天气预报、机翼设计，都是把大气切成极小的格子，一格一格算，再拼成整体。</p></div>
+      <div class="card" data-s="3"><div class="k" style="color:var(--text-helper)">医学 · CT 扫描</div><div class="h3x" style="margin:.8vh 0">一片一片切，再拼成 3D</div><p class="ps">CT 把身体「切」成很薄的断层图像，再「积」回立体结构。切片越薄，看得越清楚。</p></div>
+      <div class="card-ink" data-s="4"><div class="k" style="color:#bbb">金融 · 复利</div><div class="h3x" style="margin:.8vh 0">利息算得无限勤快会怎样？</div><p class="ps" style="color:#ccc">(1 + 1/n)ⁿ，n → ∞</p><div class="mono" style="font-size:max(18px,1.3vw);margin-top:.6vh">n = <span id="e-n">1</span> → <span id="e-v" style="color:var(--accent)">2.000000</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 SUMMARY -->
+<section class="slide" data-id="summary">
+  <div class="chrome"><span>Summary · 总结</span><span class="pg"></span></div>
+  <div class="main" style="justify-content:center">
+    <div class="k" data-s="0">So, Calculus is …</div>
+    <div class="sum-text" data-s="0" style="--dl:.15s;margin-top:2.6vh;font-weight:200;font-size:min(3.7vw,6.6vh);line-height:1.42;letter-spacing:-.01em;max-width:92vw">
+      所以，微积分就是：<br>
+      用 <span class="hl" data-hl="1" style="font-weight:400">极限</span> 的方法，<br>
+      研究函数的 <span class="hl" data-hl="2" style="font-weight:400">变化</span> <span class="dim-word">（微分）</span> 与 <span class="hl" data-hl="3" style="font-weight:400">累积</span> <span class="dim-word">（积分）</span><br>
+      的一门<span style="font-weight:400">形而上学</span>。
+    </div>
+    <div data-s="4" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;margin-top:5vh;max-width:74vw">
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">舞台</div><div class="h3x">函数 f(x)</div></div>
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">工具</div><div class="h3x">极限 lim</div></div>
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">两种看法</div><div class="h3x">切 · 拼</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 ROADMAP -->
+<section class="slide" data-id="road">
+  <div class="chrome"><span>Next · 接下来</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Roadmap · 本学期路线图</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh">我们的打怪路线</h2>
+    <div class="road" style="margin-top:8vh;max-width:86vw">
+      <div class="node here" data-s="0" style="--dl:.2s"><div class="num">LV.0 · 今天</div><div class="nm">导论</div><div class="ps">切 & 拼</div></div>
+      <div class="node" data-s="1"><div class="num">LV.1</div><div class="nm">函数</div><div class="ps">舞台搭好</div></div>
+      <div class="node" data-s="1" style="--dl:.15s"><div class="num">LV.2</div><div class="nm">极限</div><div class="ps">拿到工具</div></div>
+      <div class="node" data-s="1" style="--dl:.3s"><div class="num">LV.3</div><div class="nm">导数</div><div class="ps">学会「切」</div></div>
+      <div class="node" data-s="1" style="--dl:.45s"><div class="num">LV.4</div><div class="nm">积分</div><div class="ps">学会「拼」</div></div>
+    </div>
+    <div class="card" data-s="2" style="margin-top:7vh;max-width:56vw;border-left:4px solid var(--accent)">
+      <div class="k">Homework · 课后想一想</div>
+      <div class="h3x" style="margin-top:1vh">生活里还有哪些东西，是「先切碎，再拼回」来研究的？<br>下节课说给我听，至少举 2 个例子。</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div id="clawd" class="side-l">
+  <div class="bubble"><span class="txt"></span><span class="cursor"></span></div>
+  <svg viewBox="0 0 20 12" shape-rendering="crispEdges" aria-label="Clawd">
+    <g class="c-all">
+      <g fill="#D97757">
+        <rect class="leg la" x="3" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg lb" x="6" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg la" x="12.5" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg lb" x="15.5" y="8.8" width="1.5" height="3.2"/>
+        <rect x="2" y="0" width="16" height="9.2"/>
+        <rect class="arm al" x="0" y="3" width="2.2" height="3"/>
+        <rect class="arm ar" x="17.8" y="3" width="2.2" height="3"/>
+      </g>
+      <g class="look"><g class="eyes" fill="#000"><rect x="4.2" y="2.6" width="1.6" height="2"/><rect x="14.2" y="2.6" width="1.6" height="2"/></g></g>
+      <g class="blush" fill="#f2b9a3"><rect x="3.4" y="5.4" width="2.2" height=".9"/><rect x="14.4" y="5.4" width="2.2" height=".9"/></g>
+      <g class="sweat" fill="#6fb7ff"><rect x="18.4" y="-.6" width=".9" height="1.4"/></g>
+    </g>
+  </svg>
+</div>
+
+<div id="foot"><span class="hint">← → 翻页 · F 全屏 · H 隐藏助教</span><span class="dots" id="dots"></span></div>
+<div id="prog"></div>
+
+<script>
+/* ============ utils ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+class Tw{constructor(v,k=6){this.v=v;this.t=v;this.k=k}set(t){this.t=t}snap(v){this.v=this.t=v}upd(dt){this.v+=(this.t-this.v)*(1-Math.exp(-this.k*dt));if(Math.abs(this.t-this.v)<1e-5)this.v=this.t}}
+class Lin{constructor(v,sp=1){this.v=v;this.t=v;this.sp=sp}set(t){this.t=t}snap(v){this.v=this.t=v}upd(dt){const d=this.t-this.v,m=this.sp*dt;this.v=Math.abs(d)<=m?this.t:this.v+Math.sign(d)*m}}
+function fit(cv){const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1),w=Math.max(10,r.width),h=Math.max(10,r.height);const W=Math.round(w*d),H=Math.round(h*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h}}
+const C={accent:'#D97757',accentInk:'#B0502C',ink:'#0a0a0a',paper:'#fafaf8',g1:'#f0f0ee',g2:'#d4d4d2',g3:'#737373'};
+const MONO='500 14px "JetBrains Mono", ui-monospace, Menlo, monospace';
+const SANS=(w,s)=>`${w} ${s}px Inter, "Noto Sans SC", "PingFang SC", sans-serif`;
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function setText(el,v){if(el&&el.textContent!==v)el.textContent=v}
+function dashed(ctx,on){ctx.setLineDash(on?[4,4]:[])}
+
+/* ============ car motion: v(t)=t^2-0.1t^3, s(t)=t^3/3-0.025t^4 ============ */
+const vel=t=>t*t-0.1*t*t*t, pos=t=>t*t*t/3-0.025*t*t*t*t, S_END=pos(10);
+
+function drawCar(ctx,x,y,col){ctx.fillStyle=col||C.accent;ctx.fillRect(x-16,y-12,32,9);ctx.fillRect(x-8,y-18,15,7);ctx.fillStyle=C.ink;ctx.fillRect(x-12,y-4,6,5);ctx.fillRect(x+6,y-4,6,5);ctx.fillStyle=C.paper;ctx.fillRect(x-5,y-16,5,4)}
+function drawRoad(ctx,x0,x1,y,s,label){
+  ctx.strokeStyle=C.g2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y+2);ctx.lineTo(x1,y+2);ctx.stroke();
+  ctx.fillStyle=C.g3;ctx.font=MONO;ctx.textAlign='left';ctx.fillText('起点',x0,y+20);ctx.textAlign='right';ctx.fillText(label,x1,y+20);
+  ctx.fillStyle=C.ink;ctx.fillRect(x1-1,y-22,2,24);ctx.fillStyle=C.accent;ctx.fillRect(x1+1,y-22,12,8);
+  const cx=x0+16+(x1-x0-32)*clamp(s/S_END,0,1);drawCar(ctx,cx,y,C.accent);return cx;
+}
+function axes(ctx,g,xmax,ymax,xt,yt,xl,yl){
+  ctx.font=MONO;ctx.lineWidth=1;
+  for(let v=yt;v<=ymax+1e-9;v+=yt){const y=g.Y(v);ctx.strokeStyle='rgba(10,10,10,.07)';ctx.beginPath();ctx.moveTo(g.L,y);ctx.lineTo(g.R,y);ctx.stroke();ctx.fillStyle=C.g3;ctx.textAlign='right';ctx.fillText(v,g.L-8,y+5)}
+  for(let v=xt;v<=xmax+1e-9;v+=xt){const x=g.X(v);ctx.strokeStyle='rgba(10,10,10,.07)';ctx.beginPath();ctx.moveTo(x,g.T);ctx.lineTo(x,g.B);ctx.stroke();ctx.fillStyle=C.g3;ctx.textAlign='center';ctx.fillText(v,x,g.B+20)}
+  ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(g.L,g.T-6);ctx.lineTo(g.L,g.B);ctx.lineTo(g.R+6,g.B);ctx.stroke();
+  ctx.fillStyle=C.ink;ctx.textAlign='left';ctx.fillText(yl,g.L+8,g.T+4);ctx.textAlign='right';ctx.fillText(xl,g.R,g.B-8);
+}
+function graph(w,h,xmax,ymax,top){const L=56,R=w-18,T=top,B=h-36;return{L,R,T,B,X:t=>L+t/xmax*(R-L),Y:v=>B-v/ymax*(B-T),kx:(R-L)/xmax,ky:(B-T)/ymax}}
+
+/* ============ SCENES ============ */
+const SC={};
+
+/* ---- circle ---- */
+SC.circle=(()=>{
+  const cv=$('#cv-circle');let n=8,pn=8;const xf=new Lin(1,2.2),t=new Lin(0,.5),cut=new Tw(0,5),alt=new Tw(0,4),gap=new Tw(0,5),rl=new Tw(0,5),dim=new Tw(0,4);
+  const ST=[{n:8,t:0,cut:0,alt:0,gap:0,rl:1,dim:0},{n:8,t:0,cut:1,alt:1,gap:1,rl:0,dim:0},{n:8,t:1,cut:1,alt:1,gap:0,rl:0,dim:0},{n:32,t:1,cut:1,alt:1,gap:0,rl:0,dim:0},{n:128,t:1,cut:1,alt:1,gap:0,rl:0,dim:1},{n:128,t:1,cut:1,alt:1,gap:0,rl:0,dim:1}];
+  const btns=$$('#circle-ctl button[data-n]');
+  function sel(){btns.forEach(b=>b.classList.toggle('sel',+b.dataset.n===n))}
+  function setN(m,snap){if(m===n)return;pn=n;n=m;if(snap)xf.snap(1);else{xf.snap(0);xf.set(1)}sel()}
+  function apply(c,snap){setN(c.n,snap);const f=snap?'snap':'set';t[f](c.t);cut[f](c.cut);alt[f](c.alt);gap[f](c.gap);rl[f](c.rl);dim[f](c.dim)}
+  btns.forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();setN(+b.dataset.n);cut.set(1);alt.set(1);dim.set(t.t===1&&n>=64?1:0)}));
+  $('#circle-ctl .go').addEventListener('click',e=>{e.stopPropagation();t.set(t.t>.5?0:1);cut.set(1);alt.set(1);gap.set(t.t>.5?0:1);dim.set(t.t>.5&&n>=64?1:0);rl.set(0)});
+  function drawSet(ctx,N,a,cx,cy,r){
+    const th=2*Math.PI/N,h=th/2,s=2*r*Math.sin(h),rc=r*Math.cos(h),W=(N/2)*s+s/2,x0=cx-W/2,top=cy-rc/2,Sg=.6;
+    ctx.globalAlpha=a;
+    for(let i=0;i<N;i++){
+      const u=ease(clamp(t.v*(1+Sg)-Sg*i/(N-1),0,1));const b0=-Math.PI/2+(i+.5)*th,g=gap.v*r*.07;
+      const ax=cx+Math.cos(b0)*g,ay=cy+Math.sin(b0)*g;let bx,by,b1;
+      if(i%2===0){bx=x0+s/2+(i/2)*s;by=top;b1=Math.PI/2}else{bx=x0+((i+1)/2)*s;by=top+rc;b1=-Math.PI/2}
+      let db=b1-b0;db=((db+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+      const px=lerp(ax,bx,u),py=lerp(ay,by,u)-Math.sin(Math.PI*u)*r*.38,b=b0+db*u;
+      ctx.beginPath();ctx.moveTo(px,py);ctx.arc(px,py,r,b-h,b+h);ctx.closePath();
+      ctx.fillStyle=(i%2&&alt.v>.5)?C.ink:C.accent;if(i%2&&alt.v<=.5)ctx.fillStyle=C.accent;ctx.fill();
+      if(cut.v>.01){ctx.strokeStyle=`rgba(250,250,248,${cut.v})`;ctx.lineWidth=Math.min(2,Math.max(.4,s*.08));ctx.stroke()}
+    }
+    ctx.globalAlpha=1;return{x0,W,top,rc};
+  }
+  return{
+    enter(s){apply(ST[s],true)},setStep(s){apply(ST[s],false)},
+    frame(dt){
+      [xf,t,cut,alt,gap,rl,dim].forEach(o=>o.upd(dt));
+      const{ctx,w,h}=fit(cv);const r=Math.min(w*.88/(Math.PI+.35),h*.34),cx=w/2,cy=h*.5;
+      // pizza ghost
+      ctx.strokeStyle=C.g2;ctx.lineWidth=1;dashed(ctx,true);ctx.beginPath();ctx.arc(cx,cy,r+8,0,Math.PI*2);ctx.globalAlpha=1-Math.min(1,t.v*3);ctx.stroke();ctx.globalAlpha=1;dashed(ctx,false);
+      if(xf.v<1)drawSet(ctx,pn,1-xf.v,cx,cy,r);const g=drawSet(ctx,n,xf.v,cx,cy,r);
+      if(rl.v>.01){ctx.globalAlpha=rl.v;ctx.strokeStyle=C.paper;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r,cy);ctx.stroke();ctx.fillStyle=C.paper;ctx.fillRect(cx-4,cy-4,8,8);ctx.font=SANS(500,20);ctx.textAlign='center';ctx.fillText('r',cx+r/2,cy-10);ctx.globalAlpha=1}
+      if(dim.v>.01){const th=2*Math.PI/n,rc=r*Math.cos(th/2),W=Math.PI*r,x0=cx-W/2,top=cy-rc/2;ctx.globalAlpha=dim.v;ctx.strokeStyle=C.ink;ctx.fillStyle=C.ink;ctx.lineWidth=1.5;
+        const yb=top+rc+26;ctx.beginPath();ctx.moveTo(x0,yb);ctx.lineTo(x0+W,yb);ctx.moveTo(x0,yb-7);ctx.lineTo(x0,yb+7);ctx.moveTo(x0+W,yb-7);ctx.lineTo(x0+W,yb+7);ctx.stroke();
+        ctx.font=SANS(500,20);ctx.textAlign='center';ctx.fillText('宽 = πr（周长的一半）',cx,yb+28);
+        const xl=x0-22;ctx.beginPath();ctx.moveTo(xl,top);ctx.lineTo(xl,top+rc);ctx.moveTo(xl-7,top);ctx.lineTo(xl+7,top);ctx.moveTo(xl-7,top+rc);ctx.lineTo(xl+7,top+rc);ctx.stroke();
+        ctx.textAlign='right';ctx.fillText('高 = r',xl-10,top+rc/2+7);ctx.globalAlpha=1}
+      ctx.font=MONO;ctx.fillStyle=C.g3;ctx.textAlign='left';ctx.fillText(`n = ${n} 块`,4,18);
+    }};
+})();
+
+/* ---- s-t ---- */
+SC.st=(()=>{
+  const cv=$('#cv-st'),R={dt:$('#st-dt'),ds:$('#st-ds'),av:$('#st-av'),t:$('#st-t'),v:$('#st-v')};
+  const rev=new Lin(0,.55),secA=new Tw(0,5),tanA=new Tw(0,5),dt=new Tw(5,.9),inA=new Tw(0,4),tp=new Tw(2,3);let mode=0,clock=0;const T1=2;
+  function apply(s,snap){mode=s;const f=snap?'snap':'set';secA[f](s===1||s===2?1:0);tanA[f](s>=3?1:0);inA[f](s>=3?1:0);dt[f](s>=2?.03:5);if(snap)rev.snap(1);else rev.set(1);clock=0}
+  return{
+    enter(s){apply(s,true);if(s===0)rev.snap(0);tp.snap(s===0?0:T1)},setStep(s){apply(s,false)},
+    frame(d,now,active){
+      clock+=d;[rev,secA,tanA,dt,inA].forEach(o=>o.upd(d));
+      if(mode===0){tp.snap(Math.min(10,(clock*1.5)%14))}else if(mode<3){tp.set(T1)}else{tp.set(5-4.4*Math.cos(clock*.42))}tp.upd(d);
+      const{ctx,w,h}=fit(cv);const g=graph(w,h,10,90,74);
+      const sp=pos(tp.v);drawRoad(ctx,g.L,g.R,32,sp,`终点 ${S_END.toFixed(1)} m`);
+      axes(ctx,g,10,90,2,20,'t / 秒','s / 米');
+      // curve
+      ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();const te=10*rev.v;for(let i=0;i<=200;i++){const tt=te*i/200;const x=g.X(tt),y=g.Y(pos(tt));i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+      ctx.save();ctx.beginPath();ctx.rect(g.L,g.T-10,g.R-g.L,g.B-g.T+10);ctx.clip();
+      if(secA.v>.01){const a=T1,b=T1+dt.v,sa=pos(a),sb=pos(b),m=(sb-sa)/(b-a);ctx.globalAlpha=secA.v;
+        ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(g.X(a-3),g.Y(sa-3*m));ctx.lineTo(g.X(b+3),g.Y(sb+3*m));ctx.stroke();
+        dashed(ctx,true);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(g.X(a),g.Y(sa));ctx.lineTo(g.X(b),g.Y(sa));ctx.lineTo(g.X(b),g.Y(sb));ctx.stroke();dashed(ctx,false);
+        ctx.fillStyle=C.accentInk;ctx.font=SANS(600,16);if(b-a>.5){ctx.textAlign='center';ctx.fillText('Δt',(g.X(a)+g.X(b))/2,g.Y(sa)+20);ctx.textAlign='left';ctx.fillText('Δs',g.X(b)+8,(g.Y(sa)+g.Y(sb))/2+5)}
+        ctx.fillStyle=C.ink;ctx.fillRect(g.X(b)-5,g.Y(sb)-5,10,10);ctx.globalAlpha=1;
+        if(active){setText(R.dt,dt.v.toFixed(2));setText(R.ds,(sb-sa).toFixed(2));setText(R.av,m.toFixed(2))}}
+      if(tanA.v>.01){const m=vel(tp.v),s0=pos(tp.v);ctx.globalAlpha=tanA.v;ctx.strokeStyle=C.accent;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(g.X(tp.v-1.8),g.Y(s0-1.8*m));ctx.lineTo(g.X(tp.v+1.8),g.Y(s0+1.8*m));ctx.stroke();ctx.globalAlpha=1;
+        if(active){setText(R.t,tp.v.toFixed(1));setText(R.v,m.toFixed(1))}}
+      ctx.restore();
+      // point
+      const px=g.X(tp.v),py=g.Y(sp);ctx.strokeStyle=C.g3;ctx.lineWidth=1;dashed(ctx,true);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,g.B);ctx.moveTo(px,py);ctx.lineTo(g.L,py);ctx.stroke();dashed(ctx,false);
+      ctx.fillStyle=C.accent;ctx.fillRect(px-6,py-6,12,12);
+      // inset zoom
+      if(inA.v>.01){const S=Math.min(170,(g.B-g.T)*.44),ix=g.L+18,iy=g.T+6,Z=14,cxi=ix+S/2,cyi=iy+S/2;ctx.globalAlpha=inA.v;
+        ctx.strokeStyle=C.g3;ctx.lineWidth=1;ctx.strokeRect(px-10,py-10,20,20);ctx.beginPath();ctx.moveTo(px-10,py-10);ctx.lineTo(ix+S,iy);ctx.moveTo(px-10,py+10);ctx.lineTo(ix+S,iy+S);ctx.stroke();
+        ctx.fillStyle=C.paper;ctx.fillRect(ix,iy,S,S);ctx.save();ctx.beginPath();ctx.rect(ix,iy,S,S);ctx.clip();
+        const half=S/(2*g.kx*Z);ctx.strokeStyle=C.ink;ctx.lineWidth=5;ctx.beginPath();for(let i=0;i<=40;i++){const tt=tp.v-half+2*half*i/40;const x=cxi+(tt-tp.v)*g.kx*Z,y=cyi-(pos(tt)-sp)*g.ky*Z;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+        const m=vel(tp.v);ctx.strokeStyle=C.accent;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cxi-S,cyi+S*m*g.ky/g.kx);ctx.lineTo(cxi+S,cyi-S*m*g.ky/g.kx);ctx.stroke();ctx.restore();
+        ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.strokeRect(ix,iy,S,S);ctx.fillStyle=C.ink;ctx.font=MONO;ctx.textAlign='left';ctx.fillText('放大 ×14：曲线≈直线',ix,iy+S+20);ctx.globalAlpha=1}
+    }};
+})();
+
+/* ---- v-t ---- */
+SC.vt=(()=>{
+  const cv=$('#cv-vt'),R={n:$('#vt-n'),s:$('#vt-sum')};let n=0,on=0,clock=0;const gr=new Lin(1,1.1),fo=new Tw(0,5),rev=new Lin(0,.55);
+  const NS=[0,5,10,100,100];
+  function setN(m,snap){if(m===n)return;on=n;n=m;fo.snap(snap?0:1);fo.set(0);if(snap)gr.snap(1);else{gr.snap(0);gr.set(1)}}
+  function sum(N){let s=0;const d=10/N;for(let i=0;i<N;i++)s+=vel((i+.5)*d)*d;return s}
+  function rects(ctx,g,N,grow,a){if(!N||a<=0)return;const d=10/N,Sg=.8;ctx.globalAlpha=a;for(let i=0;i<N;i++){const u=ease(clamp(grow*(1+Sg)-Sg*i/N,0,1));const hv=vel((i+.5)*d)*u;const x=g.X(i*d),x2=g.X((i+1)*d);ctx.fillStyle=C.accent;ctx.fillRect(x,g.Y(hv),x2-x,g.B-g.Y(hv));if(N<=20){ctx.strokeStyle=C.paper;ctx.lineWidth=1.5;ctx.strokeRect(x,g.Y(hv),x2-x,g.B-g.Y(hv))}}ctx.globalAlpha=1}
+  return{
+    enter(s){setN(NS[s],true);rev.snap(s===0?0:1)},setStep(s){setN(NS[s],false);rev.set(1)},
+    frame(d,now,active){clock+=d;gr.upd(d);fo.upd(d);rev.upd(d);
+      const{ctx,w,h}=fit(cv);const g=graph(w,h,10,16,74);const tc=Math.min(10,(clock*1.5)%14);
+      const cx=drawRoad(ctx,g.L,g.R,32,pos(tc),'终点 ?? m');ctx.font=MONO;ctx.fillStyle=C.ink;ctx.textAlign='center';ctx.fillText(`速度表 ${vel(tc).toFixed(1)} m/s`,clamp(cx,g.L+70,g.R-70),12);
+      axes(ctx,g,10,16,2,4,'t / 秒','v / 米每秒');
+      rects(ctx,g,on,1,fo.v);rects(ctx,g,n,gr.v,1);
+      ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();const te=10*rev.v;for(let i=0;i<=200;i++){const tt=te*i/200;const x=g.X(tt),y=g.Y(vel(tt));i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();
+      ctx.fillStyle=C.ink;ctx.fillRect(g.X(tc)-1,g.T,2,g.B-g.T);ctx.fillStyle=C.accent;ctx.fillRect(g.X(tc)-6,g.Y(vel(tc))-6,12,12);
+      if(active&&n){setText(R.n,String(n));setText(R.s,sum(n).toFixed(2))}
+    }};
+})();
+
+/* ---- arc length ---- */
+SC.arc=(()=>{
+  const cv=$('#cv-arc'),R={n:$('#arc-n'),L:$('#arc-L'),T:$('#arc-T')};
+  const f=x=>1.7+.85*Math.sin(.9*x+.3)+.32*Math.sin(2.4*x);let n=1,pn=1;const m=new Lin(1,1.3),pa=new Tw(0,5),rev=new Lin(0,.6);
+  const TRUE=(()=>{let L=0,px=0,py=f(0);for(let i=1;i<=6000;i++){const x=10*i/6000,y=f(x);L+=Math.hypot(x-px,y-py);px=x;py=y}return L})();
+  const poly=(N,x)=>{const d=10/N,i=Math.min(N-1,Math.floor(x/d)),u=(x-i*d)/d;return lerp(f(i*d),f((i+1)*d),u)};
+  const plen=N=>{let L=0;for(let i=0;i<N;i++){const a=i*10/N,b=(i+1)*10/N;L+=Math.hypot(b-a,f(b)-f(a))}return L};
+  const NS=[3,3,8,40];
+  function setN(k,snap){if(k===n)return;pn=n;n=k;if(snap)m.snap(1);else{m.snap(0);m.set(1)}}
+  setText(R.T,TRUE.toFixed(2));
+  return{
+    enter(s){setN(NS[s],true);pa.snap(s>=1?1:0);rev.snap(s===0?0:1)},setStep(s){setN(NS[s],false);pa.set(s>=1?1:0);rev.set(1)},
+    frame(d,now,active){m.upd(d);pa.upd(d);rev.upd(d);const{ctx,w,h}=fit(cv);
+      const k=Math.min((w-40)/10,(h-30)/3.4),ox=(w-10*k)/2,oy=h-14,X=x=>ox+x*k,Y=y=>oy-y*k;
+      // mountain road
+      const te=10*rev.v;ctx.lineCap='butt';ctx.strokeStyle=C.g2;ctx.lineWidth=16;ctx.beginPath();for(let i=0;i<=300;i++){const x=te*i/300;i?ctx.lineTo(X(x),Y(f(x))):ctx.moveTo(X(x),Y(f(x)))}ctx.stroke();
+      ctx.strokeStyle=C.paper;ctx.lineWidth=1.5;ctx.setLineDash([7,7]);ctx.stroke();ctx.setLineDash([]);
+      if(pa.v>.01){ctx.globalAlpha=pa.v;ctx.strokeStyle=C.accent;ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=400;i++){const x=10*i/400;const y=lerp(poly(pn,x),poly(n,x),ease(m.v));i?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y))}ctx.stroke();
+        ctx.fillStyle=C.ink;const sz=n>20?5:8;for(let i=0;i<=n;i++){const x=i*10/n;ctx.globalAlpha=pa.v*ease(m.v);ctx.fillRect(X(x)-sz/2,Y(f(x))-sz/2,sz,sz)}ctx.globalAlpha=1;
+        if(active){setText(R.n,String(n));setText(R.L,lerp(plen(pn),plen(n),ease(m.v)).toFixed(2))}}
+    }};
+})();
+
+/* ---- mini: business / engineering / cs ---- */
+SC.apps=(()=>{
+  const cb=$('#cv-biz'),ce=$('#cv-eng'),cc=$('#cv-cs');let clock=0;let gx=.06,gt=.06,gk=0,trail=[];const lr=.18;
+  const L=x=>2.4*(x-.68)**2+.035*Math.sin(16*x)+.06, dL=x=>4.8*(x-.68)+.56*Math.cos(16*x);
+  return{enter(){clock=0;gx=gt=.06;trail=[]},setStep(){},
+    frame(d,now,active){clock+=d;
+      {const{ctx,w,h}=fit(cb);const P=q=>1-((q-.55)/.5)**2,X=q=>12+q*(w-24),Y=p=>h-14-p*(h-34);
+        ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(12,8);ctx.lineTo(12,h-14);ctx.lineTo(w-6,h-14);ctx.stroke();
+        ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<=80;i++){const q=.06+.92*i/80;i?ctx.lineTo(X(q),Y(P(q))):ctx.moveTo(X(q),Y(P(q)))}ctx.stroke();
+        const q=.55+.38*Math.sin(clock*.8),sl=-2*(q-.55)/.25*(h-34)/(w-24);const x=X(q),y=Y(P(q));
+        const top=Math.abs(q-.55)<.06;ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-40,y+40*sl);ctx.lineTo(x+40,y-40*sl);ctx.stroke();ctx.fillStyle=C.accent;ctx.fillRect(x-5,y-5,10,10);
+        ctx.font=MONO;ctx.textAlign='left';ctx.fillStyle=top?C.accentInk:C.g3;ctx.fillText(top?'导数 = 0 → 利润最大!':'斜率 = 边际利润',18,16)}
+      {const{ctx,w,h}=fit(ce);const y0=h*.58,x0=22,x1=w-22,dd=10+7*Math.sin(clock*1.8);
+        for(let i=0;i<7;i++){const x=lerp(x0+12,x1-12,i/6),len=16+5*Math.sin(clock*1.8);ctx.strokeStyle=C.accent;ctx.lineWidth=2;const yb=y0-6-dd*Math.sin(Math.PI*(x-x0)/(x1-x0));ctx.beginPath();ctx.moveTo(x,yb-len-8);ctx.lineTo(x,yb-4);ctx.stroke();ctx.fillStyle=C.accent;ctx.beginPath();ctx.moveTo(x-5,yb-9);ctx.lineTo(x+5,yb-9);ctx.lineTo(x,yb-2);ctx.fill()}
+        ctx.fillStyle=C.ink;ctx.beginPath();for(let i=0;i<=60;i++){const x=lerp(x0,x1,i/60);const y=y0+dd*Math.sin(Math.PI*i/60);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}for(let i=60;i>=0;i--){const x=lerp(x0,x1,i/60);ctx.lineTo(x,y0+8+dd*Math.sin(Math.PI*i/60))}ctx.fill();
+        [x0,x1].forEach(x=>{ctx.beginPath();ctx.moveTo(x,y0+8);ctx.lineTo(x-10,y0+26);ctx.lineTo(x+10,y0+26);ctx.closePath();ctx.fill()});
+        ctx.font=MONO;ctx.fillStyle=C.g3;ctx.textAlign='left';ctx.fillText(`最大下垂 ${(dd/10).toFixed(2)} cm`,10,16)}
+      {const{ctx,w,h}=fit(cc);const X=x=>10+x*(w-20),Y=v=>h-12-v/1.25*(h-30);
+        ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<=100;i++){const x=i/100;i?ctx.lineTo(X(x),Y(L(x))):ctx.moveTo(X(x),Y(L(x)))}ctx.stroke();
+        gk+=d;if(gk>.55){gk=0;if(Math.abs(dL(gt))<.05||trail.length>14){gt=.04+Math.random()*.08;gx=gt;trail=[]}else{trail.push(gt);gt=gt-lr*dL(gt)*.5}}
+        gx+=(gt-gx)*(1-Math.exp(-8*d));ctx.fillStyle=C.g2;trail.forEach(x=>ctx.fillRect(X(x)-3,Y(L(x))-3,6,6));
+        ctx.fillStyle=C.accent;ctx.fillRect(X(gx)-7,Y(L(gx))-14,14,14);ctx.font=MONO;ctx.fillStyle=C.g3;ctx.textAlign='left';ctx.fillText(`误差 ${L(gx).toFixed(3)}`,10,16);ctx.textAlign='right';ctx.fillText(`第 ${trail.length} 步`,w-10,16)}
+    }};
+})();
+
+/* ---- air ---- */
+SC.air=(()=>{
+  const cv=$('#cv-air');const rho=(x,y)=>.12+.88*(.5+.5*Math.cos(2.4*x+.4))*(.4+.6*y);
+  const rnd=mulberry(7),P=[];while(P.length<1700){const x=rnd(),y=rnd();if(rnd()<rho(x,y))P.push([x,y,rnd()*6.28,.6+rnd()])}
+  const GS=[[0,0],[2,1],[6,3],[48,24],[48,24]];let G=[0,0],PG=[0,0];const gf=new Lin(1,2),mag=new Tw(0,4);let samp=[],psamp=[],sf=new Lin(1,2.5),metric=0,clock=0;const Q=[.37,.6];
+  function cellOf(g){const i=Math.min(g[0]-1,Math.floor(Q[0]*g[0])),j=Math.min(g[1]-1,Math.floor(Q[1]*g[1]));return[i/g[0],j/g[1],1/g[0],1/g[1]]}
+  function sample(g){if(!g[0])return[];const[cx,cy,cw,ch]=cellOf(g);const r=mulberry(g[0]*31+5),out=[];let mx=0;for(let a=0;a<=12;a++)for(let b=0;b<=12;b++)mx=Math.max(mx,rho(cx+cw*a/12,cy+ch*b/12));while(out.length<300){const u=r(),v=r();if(r()*mx<rho(cx+cw*u,cy+ch*v))out.push([u,v,r()*6.28])}return out}
+  function nonu(g){const[cx,cy,cw,ch]=cellOf(g);let mn=9,mx=0,s=0;for(let a=0;a<=12;a++)for(let b=0;b<=12;b++){const v=rho(cx+cw*a/12,cy+ch*b/12);mn=Math.min(mn,v);mx=Math.max(mx,v);s+=v}return(mx-mn)/(s/169)*100}
+  function setG(g,snap){if(g[0]===G[0])return;PG=G;G=g;psamp=samp;samp=sample(g);metric=g[0]?nonu(g):0;if(snap){gf.snap(1);sf.snap(1)}else{gf.snap(0);gf.set(1);sf.snap(0);sf.set(1)}}
+  function grid(ctx,g,rx,ry,rw,rh,a){if(!g[0]||a<=0)return;ctx.globalAlpha=a;ctx.strokeStyle=g[0]>20?'rgba(10,10,10,.22)':C.ink;ctx.lineWidth=g[0]>20?.6:1.2;ctx.beginPath();for(let i=1;i<g[0];i++){const x=rx+rw*i/g[0];ctx.moveTo(x,ry);ctx.lineTo(x,ry+rh)}for(let j=1;j<g[1];j++){const y=ry+rh*j/g[1];ctx.moveTo(rx,y);ctx.lineTo(rx+rw,y)}ctx.stroke();ctx.globalAlpha=1}
+  return{
+    enter(s){setG(GS[s],true);mag.snap(s>=1?1:0)},setStep(s){setG(GS[s],false);mag.set(s>=1?1:0)},
+    frame(d){clock+=d;gf.upd(d);sf.upd(d);mag.upd(d);const{ctx,w,h}=fit(cv);
+      const S=Math.min(w*.32,h*.62),rw=Math.min(w-S-70,(h-60)*2.2),rh=rw/2.2,rx=10,ry=(h-rh)/2,mx=w-S-10,my=(h-S)/2;
+      // particles
+      ctx.fillStyle='rgba(10,10,10,.6)';for(const p of P){const x=rx+p[0]*rw+Math.sin(clock*p[3]*2+p[2])*1.6,y=ry+p[1]*rh+Math.cos(clock*p[3]*1.7+p[2])*1.6;ctx.fillRect(x-1.2,y-1.2,2.4,2.4)}
+      grid(ctx,PG,rx,ry,rw,rh,1-gf.v);grid(ctx,G,rx,ry,rw,rh,gf.v);
+      // room
+      ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.strokeRect(rx,ry,rw,rh);ctx.fillStyle=C.paper;ctx.fillRect(rx+rw-2,ry+rh*.18,4,rh*.3);ctx.strokeStyle=C.ink;ctx.lineWidth=1;ctx.strokeRect(rx+rw-3,ry+rh*.18,6,rh*.3);
+      ctx.fillStyle=C.ink;ctx.fillRect(rx+8,ry+rh-18,rw*.12,10);
+      ctx.font=MONO;ctx.fillStyle=C.g3;ctx.textAlign='left';ctx.fillText('暖气',rx+8,ry+rh+20);ctx.textAlign='right';ctx.fillText('窗户',rx+rw,ry-10);ctx.textAlign='left';ctx.fillText('教室剖面 · 9 m × 4 m',rx,ry-10);
+      if(mag.v>.01&&G[0]){const[cx,cy,cw,ch]=cellOf(G);const X=rx+cx*rw,Y=ry+cy*rh,W=cw*rw,H=ch*rh;ctx.globalAlpha=mag.v;
+        ctx.strokeStyle=C.accent;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X+W,Y);ctx.lineTo(mx,my);ctx.moveTo(X+W,Y+H);ctx.lineTo(mx,my+S);ctx.stroke();ctx.lineWidth=3;ctx.strokeRect(X,Y,W,H);
+        ctx.fillStyle=C.paper;ctx.fillRect(mx,my,S,S);
+        const dr=(arr,a)=>{ctx.globalAlpha=mag.v*a;ctx.fillStyle=C.ink;for(const p of arr){ctx.fillRect(mx+6+p[0]*(S-12)+Math.sin(clock*2+p[2])*1.5-2,my+6+p[1]*(S-12)+Math.cos(clock*1.6+p[2])*1.5-2,4,4)}};
+        dr(psamp,1-sf.v);dr(samp,sf.v);ctx.globalAlpha=mag.v;ctx.strokeStyle=C.accent;ctx.lineWidth=3;ctx.strokeRect(mx,my,S,S);
+        ctx.font=MONO;ctx.fillStyle=C.ink;ctx.textAlign='left';ctx.fillText('放大这一块 ↓',mx,my-12);
+        const ok=metric<12;ctx.fillText(`块内密度差 ${metric.toFixed(0)}%`,mx,my+S+24);ctx.fillStyle=C.g1;ctx.fillRect(mx,my+S+34,S,8);ctx.fillStyle=ok?C.ink:C.accent;ctx.fillRect(mx,my+S+34,S*clamp(metric/100,0,1),8);
+        ctx.font=SANS(600,18);ctx.fillStyle=ok?C.ink:C.accentInk;ctx.textAlign='right';ctx.fillText(ok?'✓ 几乎均匀':'✗ 不均匀',mx+S,my+S+24);ctx.globalAlpha=1}
+    }};
+})();
+
+/* ---- limit number line ---- */
+SC.limit=(()=>{
+  const cv=$('#cv-lim'),out=$('#lim-v');const k=new Tw(0,5),lv=new Tw(1,3);let run=false,hold=0,tick=0;
+  function fmt(x){if(x>=.99999)return String(Math.round(x));const dg=Math.min(14,Math.ceil(-Math.log10(x))+3);return x.toFixed(dg).replace(/0+$/,'')}
+  return{enter(s){run=s>=1;k.snap(0);lv.snap(0);hold=0;tick=0},setStep(s){run=s>=1},
+    frame(d,now,active){if(run){tick+=d;if(k.t>=22){hold+=d;if(hold>2.4){k.snap(0);lv.snap(0);hold=0;tick=0}}else if(tick>.85){tick=0;k.set(k.t+1)}}k.upd(d);
+      const dx=Math.pow(2,-k.v);lv.set(Math.floor(Math.log10(dx*.999))+1);lv.upd(d);const V=Math.pow(10,lv.v)*1.15;
+      const{ctx,w,h}=fit(cv);const x0=28,x1=w-20,y=h*.55;const X=v=>x0+v/V*(x1-x0);
+      ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+      const st=Math.pow(10,Math.round(lv.v)-1);ctx.font=MONO;ctx.textAlign='center';
+      for(let i=0;i<=200;i++){const v=i*st/5;const x=X(v);if(x>x1)break;const major=i%5===0;ctx.strokeStyle=major?C.ink:C.g2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y-(major?10:5));ctx.lineTo(x,y+(major?10:5));ctx.stroke();if(major&&i%10===0&&i>0){ctx.fillStyle=C.g3;ctx.fillText(fmt(v),x,y+30)}}
+      ctx.fillStyle=C.ink;ctx.fillRect(x0-6,y-6,12,12);ctx.font=SANS(600,18);ctx.fillText('0',x0,y+32);
+      const mxp=X(dx);ctx.fillStyle=C.accent;ctx.fillRect(x0,y-3,mxp-x0,6);ctx.fillRect(mxp-8,y-24,16,16);ctx.beginPath();ctx.moveTo(mxp-8,y-8);ctx.lineTo(mxp+8,y-8);ctx.lineTo(mxp,y-1);ctx.fill();
+      ctx.font=MONO;ctx.fillStyle=C.accentInk;ctx.fillText('Δx',mxp,y-32);ctx.fillStyle=C.g3;ctx.textAlign='right';ctx.fillText(`显微镜倍数 ×${Math.max(1,Math.round(1.15/V)).toLocaleString()}`,x1,16);
+      if(active)setText(out,fmt(dx));
+    }};
+})();
+
+/* ---- e limit ---- */
+SC.uses=(()=>{const en=$('#e-n'),ev=$('#e-v');const NS=[1,2,5,10,100,1000,10000,100000,1000000,10000000];let i=0,acc=0,run=false;
+  return{enter(s){i=0;acc=0;run=s>=4},setStep(s){run=s>=4},frame(d){if(!run)return;acc+=d;if(acc>.9){acc=0;i=(i+1)%(NS.length+3)}const n=NS[Math.min(i,NS.length-1)];setText(en,n.toLocaleString());setText(ev,Math.pow(1+1/n,n).toFixed(6)+(i>=NS.length-1?' ≈ e':''))}}})();
+
+/* ============ CLAWD SCRIPT (per slide, per step) ============ */
+const CL={
+  cover:[{x:79,y:72,s:2.2,say:'嗨！我是 Clawd，今天的高数小助教。别紧张，今天不考试。',act:'wave',mood:'happy'}],
+  joke:[
+    {x:86,y:88,s:1.3,say:'先别翻书。你觉得「高数」是什么？'},
+    {x:86,y:88,s:1.3,say:'嗯……听起来很有道理对吧？',look:-1},
+    {x:86,y:88,s:1.3,say:'哈哈哈，开玩笑的！要是这么简单，就不用专门开一门课了。',act:'jump',mood:'happy'}],
+  calc:[
+    {x:40,perch:1,say:'它的英文名叫 Calculus。对，和「结石」是同一个词。'},
+    {x:44,perch:1,say:'翻译过来——微积分！',act:'jump'},
+    {x:44,perch:1,say:'两兄弟：一个负责切，一个负责拼。'},
+    {x:44,perch:1,say:'「形而上学」听着玄乎？其实就是一种看问题的套路。',mood:'happy'}],
+  circle:[
+    {x:38,perch:1,say:'圆是弯的，弯的东西最难算……',mood:'sweaty'},
+    {x:40,perch:1,say:'第一刀！像切披萨一样，切成 8 块。',act:'jump'},
+    {x:42,perch:1,say:'一正一倒拼起来……有点像个歪歪扭扭的平行四边形？'},
+    {x:42,perch:1,say:'切 32 块：边越来越直了！'},
+    {x:42,perch:1,say:'切 128 块：这不就是个长方形嘛！',act:'jump'},
+    {x:42,perch:1,say:'弯的变直的，难题变小学题。下课我要去吃披萨。',mood:'happy'}],
+  idea:[
+    {x:40,perch:1,say:'刚才那一刀一刀，就是微积分的灵魂。'},
+    {x:40,perch:1,say:'微分：化整为零。切到足够碎，什么都是直的。'},
+    {x:40,perch:1,say:'积分：积零为整。再把碎片拼回去。一拆一拼，搞定！',act:'jump',mood:'happy'}],
+  st:[
+    {x:38,perch:1,say:'换个场景：一辆车，从起步到刹车。司机是我。'},
+    {x:38,perch:1,say:'两个时间点一减，得到平均速度。'},
+    {x:38,perch:1,say:'Δt 再小点……再小点……再小一点点……',mood:'sweaty'},
+    {x:38,perch:1,say:'小到极致：割线变切线，这一瞬间的速度！',act:'jump'}],
+  vt:[
+    {x:38,perch:1,say:'里程表坏了。只看速度表，能算出跑了多远吗？'},
+    {x:38,perch:1,say:'每一小段，假装速度不变：路程 ≈ 速度 × 时间。'},
+    {x:38,perch:1,say:'切得更细，误差更小。'},
+    {x:38,perch:1,say:'切到无限细：面积就是路程！',act:'jump'},
+    {x:38,perch:1,say:'求导和积分，一去一回，正好互逆。',mood:'happy'}],
+  arc:[
+    {x:40,perch:1,say:'这条山路有多长？直尺：我太难了。',mood:'sweaty'},
+    {x:42,perch:1,say:'先用 3 根直线凑一凑……差得有点远。'},
+    {x:44,perch:1,say:'8 根：贴近多了。'},
+    {x:46,perch:1,say:'40 根：已经分不出来了！无限多根 → 精确弧长。',act:'jump'}],
+  apps:[
+    {x:40,perch:1,say:'微积分可不只活在数学课里。'},
+    {x:40,perch:1,say:'商科：「多卖一件能多赚多少」——这就是导数，老板天天在算。'},
+    {x:40,perch:1,say:'工程：桥能扛多重，得靠积分算清楚。不然……',mood:'sweaty'},
+    {x:40,perch:1,say:'计算机：我（AI）就是靠导数，下了几万亿次山才学会说话的。',act:'jump',mood:'happy'}],
+  important:[
+    {x:40,perch:1,say:'所以大学里，几乎每个理工商专业都要学它。'},
+    {x:40,perch:1,say:'你看，全都连着它。逃不掉的。',mood:'sweaty'},
+    {x:40,perch:1,say:'学会它，相当于拿到一副看世界的新眼镜。',mood:'happy'}],
+  divider:[
+    {x:79,y:72,s:2,say:'等等……我们一直说「切得无限细」。'},
+    {x:79,y:72,s:2,say:'到底多细才算细？这个问题，叫「极限」。',act:'jump'}],
+  air:[
+    {x:38,perch:1,say:'一间教室，空气是均匀的吗？'},
+    {x:38,perch:1,say:'切成两大块：一块里有挤有空，不能当均匀的算。',mood:'sweaty'},
+    {x:38,perch:1,say:'1 立方米一块：好一点，但还是不匀。'},
+    {x:38,perch:1,say:'切得足够小：每一小块，就几乎均匀了！',act:'jump'},
+    {x:38,perch:1,say:'一块块算，再加起来。「足够小」到底多小？——极限说了算。',mood:'happy'}],
+  limit:[
+    {x:40,perch:1,say:'那么，到底切多小才够？'},
+    {x:40,perch:1,say:'一直减半……一直减半……我追得好累。',act:'jump',mood:'sweaty'},
+    {x:40,perch:1,say:'它无限接近 0，但永远不是 0。这就叫极限。'},
+    {x:40,perch:1,say:'回头看：刚才每个例子，其实都在偷偷用极限！',act:'jump',mood:'happy'}],
+  uses:[
+    {x:40,perch:1,say:'极限离你的生活，比你想的近。'},
+    {x:40,perch:1,say:'下次被雷达测速拍到，记得那是瞬时速度。（别超速）'},
+    {x:40,perch:1,say:'天气预报准不准，看格子切得细不细。'},
+    {x:40,perch:1,say:'CT：先切片，再拼回 3D，又是一切一拼。'},
+    {x:40,perch:1,say:'利息算得再勤快，也不会无限多——最后停在 e ≈ 2.718。银行松了口气。',act:'jump'}],
+  summary:[
+    {x:40,perch:1,say:'最后，回到开头那句话。'},
+    {x:40,perch:1,say:'工具：极限。'},
+    {x:40,perch:1,say:'变化：切开来看，叫微分。'},
+    {x:40,perch:1,say:'累积：拼起来看，叫积分。'},
+    {x:40,perch:1,say:'这就是整个学期要讲的东西！就这？就这。',act:'jump',mood:'happy'}],
+  road:[
+    {x:40,perch:1,say:'我们在这儿：新手村。'},
+    {x:60,perch:1,say:'一路打怪升级，最终 Boss：积分！'},
+    {x:88,y:90,s:1.1,say:'下节课：函数与极限。我们下节课见！',act:'wave',mood:'happy'}],
+};
+
+/* ============ CLAWD CONTROLLER ============ */
+const clawd=(()=>{
+  const el=$('#clawd'),svg=$('#clawd svg'),bub=$('#clawd .bubble'),txt=$('#clawd .txt'),cursor=$('#clawd .cursor'),look=$('#clawd .look');
+  let x=110,y=90,typing=null,lastSay='',walkT=null,actT=null;
+  function say(s){if(s===lastSay)return;lastSay=s;clearInterval(typing);if(!s){bub.classList.remove('show');return}
+    bub.classList.add('show');txt.textContent='';cursor.style.display='inline-block';let i=0;const chars=[...s];
+    typing=setInterval(()=>{txt.textContent+=chars[i++]||'';if(i>=chars.length){clearInterval(typing);setTimeout(()=>cursor.style.display='none',600)}},38)}
+  function act(a){svg.classList.remove('jump','shake');el.classList.remove('wave');void svg.offsetWidth;if(a==='jump')svg.classList.add('jump');if(a==='shake')svg.classList.add('shake');if(a==='wave')el.classList.add('wave');clearTimeout(actT);actT=setTimeout(()=>el.classList.remove('wave'),2200)}
+  function to(p0){
+    const p=Object.assign({},p0);
+    if(p.perch){const ch=slides[cur].querySelector('.chrome');p.y=ch?ch.getBoundingClientRect().bottom/innerHeight*100:10;p.s=p.s||.62}
+    const dx=p.x-x,moving=Math.abs(dx)+Math.abs(p.y-y)>.5;
+    el.classList.toggle('side-l',p.perch?!!p.left:p.x>55);el.classList.toggle('bside',!!p.perch);el.style.setProperty('--s',p.s);
+    el.style.transform=`translate3d(${p.x}vw,${p.y}vh,0)`;
+    const lk=p.look!=null?p.look:(moving?Math.sign(dx):0);look.style.transform=`translateX(${lk*.7}px)`;
+    el.classList.remove('happy','sweaty');
+    if(moving){el.classList.add('walk');clearTimeout(walkT);bub.classList.remove('show');lastSay='';walkT=setTimeout(()=>{el.classList.remove('walk');if(p.look==null)look.style.transform='translateX(0)';fin()},1150)}else fin();
+    function fin(){if(p.mood)el.classList.add(p.mood);if(p.act)act(p.act);say(p.say||'')}
+    x=p.x;y=p.y;
+  }
+  const QUIPS=['别戳我，看黑板！','我也在认真听课呢。','微分：切。积分：拼。记住没？','π = 3.14159265……我还能背。','偷偷告诉你：高数没那么可怕。'];let qi=0;
+  svg.addEventListener('click',e=>{e.stopPropagation();act('jump');el.classList.add('happy');lastSay='';say(QUIPS[qi++%QUIPS.length]);setTimeout(()=>el.classList.remove('happy'),1500)});
+  return{to,el};
+})();
+
+/* ============ DECK ENGINE ============ */
+const slides=$$('.slide'),N=slides.length,deck=$('#deck');
+const info=slides.map((sl,i)=>{const id=sl.dataset.id;let mx=0;$$('[data-s],[data-hl]',sl).forEach(e=>mx=Math.max(mx,+(e.dataset.s??e.dataset.hl)));if(CL[id])mx=Math.max(mx,CL[id].length-1);$$('.pg',sl).forEach(p=>p.textContent=`${String(i+1).padStart(2,'0')} / ${N}`);return{id,max:mx}});
+let cur=0,st=0,enterT=null;
+function reveal(sl,s){$$('[data-s]',sl).forEach(e=>{const k=+e.dataset.s;e.classList.toggle('on',k<=s);e.classList.toggle('cur',k===s)});$$('[data-hl]',sl).forEach(e=>e.classList.toggle('lit',+e.dataset.hl<=s));$$('[data-until]',sl).forEach(e=>e.classList.toggle('gone',s>+e.dataset.until))}
+function go(i,s){
+  i=clamp(i,0,N-1);s=clamp(s,0,info[i].max);const changed=i!==cur||!go.inited;go.inited=true;cur=i;st=s;
+  deck.style.transform=`translate3d(${-i*100}vw,0,0)`;const sl=slides[i],id=info[i].id,sc=SC[id];
+  if(changed){sl.classList.add('noanim');reveal(sl,-1);void sl.offsetWidth;sl.classList.remove('noanim');sc&&sc.enter&&sc.enter(s);clearTimeout(enterT);
+    enterT=setTimeout(()=>{if(cur!==i)return;reveal(sl,st);sc&&sc.setStep&&sc.setStep(st)},480)}
+  else{reveal(sl,s);sc&&sc.setStep&&sc.setStep(s)}
+  const cl=CL[id];if(cl)clawd.to(cl[Math.min(s,cl.length-1)]);
+  document.body.classList.toggle('on-acc',sl.classList.contains('split'));document.body.classList.toggle('first',i===0);
+  $('#prog').style.width=((i+(info[i].max?s/(info[i].max+1):0))/(N-1)*100)+'%';
+  const dots=$('#dots');dots.innerHTML='';for(let k=0;k<=info[i].max;k++){const d=document.createElement('i');if(k<s)d.className='on';if(k===s)d.className='cur';dots.appendChild(d)}
+  try{history.replaceState(null,'',`#${i+1}.${s}`)}catch(e){}
+}
+addEventListener('resize',()=>{const cl=CL[info[cur].id];if(cl&&cl[Math.min(st,cl.length-1)].perch)clawd.to(cl[Math.min(st,cl.length-1)])});
+const next=()=>{if(st<info[cur].max)go(cur,st+1);else if(cur<N-1)go(cur+1,0)};
+const prev=()=>{if(st>0)go(cur,st-1);else if(cur>0)go(cur-1,info[cur-1].max)};
+addEventListener('keydown',e=>{const k=e.key;
+  if(['ArrowRight',' ','PageDown','Enter','ArrowDown'].includes(k)){e.preventDefault();next()}
+  else if(['ArrowLeft','PageUp','ArrowUp','Backspace'].includes(k)){e.preventDefault();prev()}
+  else if(k==='Home')go(0,0);else if(k==='End')go(N-1,info[N-1].max);
+  else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+  else if(k==='h'||k==='H')clawd.el.classList.toggle('hidden');
+});
+addEventListener('click',e=>{if(e.target.closest('button,a,input'))return;(e.clientX<innerWidth*.18?prev:next)()});
+let tx=null;addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});addEventListener('touchend',e=>{if(tx==null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)(d<0?next:prev)();tx=null});
+let wheelLock=0;addEventListener('wheel',e=>{const n=Date.now();if(n<wheelLock||Math.abs(e.deltaY)<30)return;wheelLock=n+700;(e.deltaY>0?next:prev)()},{passive:true});
+
+/* ============ background grid ============ */
+const bg=$('#bg');let mouse=[-999,-999],bgDirty=true;
+addEventListener('mousemove',e=>{mouse=[e.clientX,e.clientY];bgDirty=true},{passive:true});addEventListener('resize',()=>bgDirty=true);
+function drawBg(){const{ctx,w,h}=fit(bg);const c=40;ctx.strokeStyle='rgba(10,10,10,.045)';ctx.lineWidth=1;ctx.beginPath();for(let x=.5;x<w;x+=c){ctx.moveTo(x,0);ctx.lineTo(x,h)}for(let y=.5;y<h;y+=c){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();
+  for(let x=0;x<w;x+=c)for(let y=0;y<h;y+=c){const d=Math.hypot(x-mouse[0],y-mouse[1]);if(d<170){const a=1-d/170;ctx.fillStyle=`rgba(217,119,87,${.25+.6*a})`;const s=1.5+3*a;ctx.fillRect(x-s/2,y-s/2,s,s)}else{ctx.fillStyle='rgba(10,10,10,.16)';ctx.fillRect(x-.75,y-.75,1.5,1.5)}}}
+
+/* ============ loop ============ */
+let last=performance.now();
+function loop(now){const d=Math.min(.05,(now-last)/1000);last=now;
+  for(let k=cur-1;k<=cur+1;k++){if(k<0||k>=N)continue;const sc=SC[info[k].id];if(sc&&sc.frame)sc.frame(d,now/1000,k===cur)}
+  if(bgDirty){drawBg();bgDirty=false}requestAnimationFrame(loop)}
+
+/* init */
+(function(){const m=location.hash.match(/^#(\d+)(?:\.(\d+))?/);let i=0,s=0;if(m){i=+m[1]-1;s=+(m[2]||0)}
+  Object.values(SC).forEach(sc=>{});go(i,s);requestAnimationFrame(loop)})();
+</script>
+</body>
+</html>

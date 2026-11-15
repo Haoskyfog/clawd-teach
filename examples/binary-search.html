@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!-- clawd-teach template · Swiss Style B · one accent #D97757 · see SKILL.md -->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>二分查找 · 算法入门第 1 讲 —— 从猜数字开始</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200..700&family=Noto+Sans+SC:wght@200..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<style>
+:root{
+  --sans:'Inter','Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Noto Sans SC',ui-monospace,'SF Mono',Menlo,monospace;
+  --paper:#fafaf8; --grey-1:#f0f0ee; --grey-2:#d4d4d2; --grey-3:#737373;
+  --ink:#0a0a0a; --text-body:#252524; --text-secondary:#525252; --text-helper:#737373;
+  --line:#d4d4d2; --line-strong:#a3a3a3;
+  --accent:#D97757; --accent-ink:#B0502C; --accent-on:#ffffff; --accent-on-rgb:255,255,255;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-page:cubic-bezier(.77,0,.175,1); --pop:cubic-bezier(.34,1.56,.64,1);
+  --cw:min(6.4vw,11.4vh);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+#deck{position:relative;z-index:1;display:flex;height:100vh;transition:transform 1s var(--ease-page);will-change:transform}
+.slide{flex:0 0 100vw;width:100vw;height:100vh;position:relative;padding:5.6vh 5vw 6vh;display:flex;flex-direction:column;overflow:hidden}
+.chrome{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:max(14px,.78vw);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text-helper);padding-bottom:1.5vh;border-bottom:1px solid var(--line);flex:none}
+.chrome .pg{color:var(--ink)}
+.main{flex:1;min-height:0;position:relative;padding-top:4.6vh;display:flex;flex-direction:column}
+
+/* type */
+.k{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-ink)}
+.h1x{font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1.04;letter-spacing:-.02em}
+.h2x{font-weight:300;font-size:min(3.3vw,5.9vh);line-height:1.15;letter-spacing:-.015em}
+.h3x{font-weight:400;font-size:max(20px,min(1.7vw,3.1vh));line-height:1.3;letter-spacing:-.01em}
+.p{font-size:max(18px,1.1vw);line-height:1.65;font-weight:400;color:var(--text-body)}
+.ps{font-size:max(16px,.96vw);line-height:1.6;font-weight:500;color:var(--text-secondary)}
+.mono{font-family:var(--mono)}
+.acc{color:var(--accent-ink)}
+.b{font-weight:600}
+.sm-note{font-size:max(16px,.92vw);color:var(--text-helper);font-weight:500}
+
+/* reveal */
+[data-s]{opacity:0;transform:translate3d(0,18px,0);transition:opacity .7s var(--ease) var(--dl,0s),transform .9s var(--ease) var(--dl,0s)}
+[data-s].on{opacity:1;transform:none}
+[data-s][data-fx=left]{transform:translate3d(-28px,0,0)}
+[data-s][data-fx=right]{transform:translate3d(28px,0,0)}
+[data-s][data-fx=pop]{transform:scale(.4) rotate(-6deg);transition:opacity .35s var(--ease) var(--dl,0s),transform .6s var(--pop) var(--dl,0s)}
+[data-s][data-fx=fade]{transform:none}
+[data-s].on[data-fx]{transform:none}
+.gone{opacity:0!important;transform:translate3d(0,-12px,0)!important;pointer-events:none}
+.noanim,.noanim *{transition:none!important}
+
+/* components */
+.card{background:var(--grey-1);padding:2.6vh 1.7vw}
+.card-ink{background:var(--ink);color:var(--paper);padding:2.6vh 1.7vw}
+.card-acc{background:var(--accent);color:var(--accent-on);padding:2.6vh 1.7vw}
+.rule{border-top:1px solid var(--line)}
+.tag{display:inline-block;font-family:var(--mono);font-size:max(14px,.76vw);font-weight:600;letter-spacing:.12em;padding:.25em .6em;background:var(--ink);color:var(--paper);vertical-align:middle}
+.tag.a{background:var(--accent);color:var(--accent-on)}
+.sq{display:inline-block;width:.42em;height:.42em;background:var(--accent);vertical-align:middle;margin-right:.5em}
+
+.steps-list{list-style:none;display:flex;flex-direction:column}
+.steps-list li{display:grid;grid-template-columns:3.2em 1fr;gap:1vw;padding:1.1vh 0 1.1vh .9vw;align-items:center;border-top:1px solid var(--line);position:relative}
+.steps-list li::before{content:'';position:absolute;left:0;top:-1px;bottom:0;width:3px;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease)}
+.steps-list li.cur::before{transform:scaleY(1)}
+.steps-list .n{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:600;color:var(--text-helper);padding-top:.35em}
+.steps-list li.cur .n{color:var(--accent-ink)}
+
+.ro{display:grid;grid-template-columns:auto 1fr;column-gap:1.2vw;border-top:1px solid var(--ink)}
+.ro>div{padding:1.1vh 0;border-bottom:1px solid var(--line)}
+.ro .l{font-size:max(16px,.92vw);color:var(--text-secondary);font-weight:500}
+.ro .v{font-family:var(--mono);font-size:max(18px,1.25vw);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+
+.seg{display:flex;align-items:center;gap:0;font-family:var(--mono);font-size:max(14px,.78vw)}
+.seg .lab{color:var(--text-helper);margin-right:.8em;letter-spacing:.08em}
+.seg button{font:inherit;font-weight:600;background:transparent;border:1px solid var(--ink);margin-left:-1px;padding:.45em .8em;cursor:pointer;color:var(--ink)}
+.seg button.sel{background:var(--ink);color:var(--paper)}
+.seg button.go{background:var(--accent);border-color:var(--accent);color:var(--accent-on);margin-left:1em}
+.seg button:hover{outline:2px solid var(--accent);outline-offset:-2px}
+
+canvas.cv{display:block;width:100%;height:100%}
+
+/* split slides */
+.slide.split{padding:0;flex-direction:row}
+.half{height:100%;padding:5.6vh 3.6vw 6vh;display:flex;flex-direction:column;position:relative}
+.half.acc{background:var(--accent);color:var(--accent-on)}
+.half.acc .chrome{color:rgba(var(--accent-on-rgb),.8);border-color:rgba(var(--accent-on-rgb),.35)}
+.half.acc .chrome .pg{color:var(--accent-on)}
+.half.acc .k{color:rgba(var(--accent-on-rgb),.85)}
+
+/* joke */
+.eq-row{display:flex;align-items:baseline;gap:1.6vw;flex-wrap:wrap}
+.strike-wrap{position:relative;display:inline-block}
+.strike{position:absolute;left:-3%;right:-3%;top:50%;height:.09em;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease)}
+.strike.on{transform:scaleX(1)}
+.stamp{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:var(--accent-on);font-weight:500;font-size:min(2.6vw,4.6vh);padding:.35em .7em;letter-spacing:.02em}
+
+/* calculus */
+.giant{font-weight:200;font-size:min(10vw,17vh);line-height:.95;letter-spacing:-.04em}
+.arrow-r{font-weight:200;font-size:min(6vw,10vh);color:var(--accent-ink);line-height:1}
+
+/* idea slices */
+.bar{display:flex;height:9vh;width:100%;gap:0;transition:gap .9s var(--ease)}
+.bar i{flex:1;background:var(--ink);transition:transform .9s var(--ease) calc(var(--j)*35ms),background .5s}
+.bar.cut.on{gap:.55vw}
+.bar.cut.on i:nth-child(odd){background:var(--accent)}
+.bar.cut.on i{transform:translateY(calc(sin(var(--j)*1rad)*1.6vh))}
+.bar.join i{transform:translateY(calc(var(--r)*1vh)) rotate(calc(var(--r)*4deg));background:var(--accent)}
+.bar.join{gap:.55vw}
+.bar.join.on{gap:0}
+.bar.join.on i{transform:none;background:var(--ink)}
+
+/* network */
+.net line{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .9s var(--ease) var(--dl,0s)}
+.net.on line{stroke-dashoffset:0}
+.net .nd{opacity:0;transition:opacity .5s var(--ease) calc(var(--dl,0s) + .5s)}
+.net.on .nd{opacity:1}
+.net text{font-family:var(--sans);font-size:19px;font-weight:500;fill:var(--ink)}
+
+/* summary highlights */
+.hl{position:relative;display:inline-block;padding:0 .12em;transition:color .5s var(--ease)}
+.hl::before{content:'';position:absolute;inset:.08em 0 .02em;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease);z-index:-1}
+.hl.lit{color:var(--accent-on)}
+.hl.lit::before{transform:scaleX(1)}
+.sum-text{position:relative;z-index:0}
+.dim-word{color:var(--text-helper);font-weight:300}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.road .node{border-top:3px solid var(--grey-2);padding-top:2vh;padding-right:1.4vw;transition:border-color .6s}
+.road .node.on{border-color:var(--ink)}
+.road .node.here{border-color:var(--accent)}
+.road .num{font-family:var(--mono);font-size:max(14px,.8vw);font-weight:600;color:var(--text-helper)}
+.road .nm{font-weight:300;font-size:min(2.6vw,4.6vh);margin-top:.6vh}
+
+/* clawd */
+#clawd{position:fixed;left:0;top:0;width:0;height:0;z-index:50;transform:translate3d(110vw,90vh,0);transition:transform 1.15s cubic-bezier(.65,0,.35,1);pointer-events:none;--s:1}
+#clawd svg{position:absolute;bottom:0;left:calc(var(--cw)*var(--s)/-2);width:calc(var(--cw)*var(--s));height:calc(var(--cw)*var(--s)*.6);overflow:visible;pointer-events:auto;cursor:pointer;transition:width .9s var(--ease),height .9s var(--ease),left .9s var(--ease);transform-origin:50% 100%}
+#clawd .c-all{animation:idle 2.6s ease-in-out infinite}
+#clawd .eyes rect{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+#clawd .look{transition:transform .5s var(--ease)}
+#clawd.walk .la{animation:legA .28s steps(1) infinite}
+#clawd.walk .lb{animation:legA .28s steps(1) infinite reverse;animation-delay:-.14s}
+#clawd.walk .c-all{animation:bob .28s ease-in-out infinite}
+#clawd svg.jump{animation:jump .7s var(--ease)}
+#clawd svg.shake{animation:shake .5s linear}
+#clawd.wave .ar{animation:wave .32s ease-in-out 6 alternate}
+#clawd .sweat{opacity:0;transition:opacity .3s}
+#clawd.sweaty .sweat{opacity:1;animation:drip 1.2s ease-in infinite}
+#clawd .blush{opacity:0;transition:opacity .4s}
+#clawd.happy .blush{opacity:1}
+#clawd.happy .eyes rect{animation:none;transform:scaleY(.35)}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-.35px)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-.5px)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes legA{0%{transform:translateY(-.9px)}50%{transform:translateY(0)}}
+@keyframes jump{0%{transform:scale(1.1,.85)}30%{transform:translateY(-55%) scale(.92,1.1)}60%{transform:translateY(0) scale(1.12,.86)}80%{transform:scale(.97,1.04)}100%{transform:none}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6%) rotate(-4deg)}40%{transform:translateX(6%) rotate(4deg)}60%{transform:translateX(-4%) rotate(-2deg)}80%{transform:translateX(3%)}}
+@keyframes wave{to{transform:translateY(-2.2px)}}
+@keyframes drip{0%{transform:translateY(0);opacity:1}100%{transform:translateY(2.5px);opacity:0}}
+.bubble{position:absolute;bottom:calc(var(--cw)*var(--s)*.6 + 18px);left:calc(var(--cw)*var(--s)*.12);width:max-content;max-width:min(25vw,380px);background:var(--paper);border:1.5px solid var(--ink);padding:.7em 1em;font-size:max(16px,.98vw);line-height:1.5;font-weight:500;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity .35s var(--ease),transform .45s var(--ease),bottom .9s var(--ease),left .9s var(--ease),right .9s var(--ease);pointer-events:none}
+.bubble::after{content:'';position:absolute;bottom:-7.5px;left:20px;width:12px;height:12px;background:var(--paper);border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(45deg)}
+#clawd.side-l .bubble{left:auto;right:calc(var(--cw)*var(--s)*.12)}
+#clawd.side-l .bubble::after{left:auto;right:20px}
+.bubble.show{opacity:1;transform:none}
+#clawd.bside .bubble{bottom:1px;left:calc(var(--cw)*var(--s)*.5 + 16px);right:auto;max-width:min(46vw,680px);transform:translateX(-10px)}
+#clawd.bside.side-l .bubble{left:auto;right:calc(var(--cw)*var(--s)*.5 + 16px);transform:translateX(10px)}
+#clawd.bside .bubble.show{transform:none}
+#clawd.bside .bubble::after{left:-7.5px;right:auto;bottom:10px;transform:rotate(135deg)}
+#clawd.bside.side-l .bubble::after{left:auto;right:-7.5px;transform:rotate(-45deg)}
+.bubble .cursor{display:inline-block;width:.5em;height:1em;background:var(--accent);vertical-align:-.12em;margin-left:2px;animation:cur .8s steps(1) infinite}
+@keyframes cur{50%{opacity:0}}
+#clawd.hidden{opacity:0;transition:opacity .4s}
+
+/* footer */
+#prog{position:fixed;left:0;bottom:0;height:3px;background:var(--accent);z-index:60;transition:width .8s var(--ease);width:0}
+#foot .hint{transition:opacity .5s}
+body:not(.first) #foot .hint{opacity:0}
+#foot{position:fixed;left:50%;transform:translateX(-50%);bottom:1.6vh;z-index:60;display:flex;align-items:center;gap:1.2vw;font-family:var(--mono);font-size:14px;font-weight:500;color:var(--text-helper);letter-spacing:.06em}
+#foot .dots{display:flex;gap:5px}
+#foot .dots i{width:8px;height:8px;background:var(--grey-2);transition:background .3s}
+#foot .dots i.on{background:var(--ink)}
+#foot .dots i.cur{background:var(--accent)}
+body.on-acc #foot{color:rgba(255,255,255,.85)}
+body.on-acc #foot .dots i{background:rgba(255,255,255,.4)}
+body.on-acc #foot .dots i.on{background:#fff}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div id="deck">
+
+<!-- 01 COVER -->
+<section class="slide split" data-id="cover">
+  <div class="half acc" style="width:58%">
+    <div class="chrome"><span>算法入门 · 第 1 讲 / Lecture 01</span><span class="pg"></span></div>
+    <div class="main" style="justify-content:space-between">
+      <div class="k" data-s="0" style="--dl:.1s">Algorithms 101 · Binary Search</div>
+      <div>
+        <h1 data-s="0" style="--dl:.25s;font-weight:200;font-size:min(9.4vw,16.5vh);line-height:.98;letter-spacing:-.03em">二分查找</h1>
+        <div data-s="0" style="--dl:.4s;font-weight:300;font-size:min(4.2vw,7.4vh);line-height:1.1;margin-top:1.5vh">第 1 讲 · <span style="font-weight:400">从猜数字开始</span></div>
+      </div>
+      <div data-s="0" style="--dl:.55s;border-top:1px solid rgba(255,255,255,.35);padding-top:2vh">
+        <div class="p" style="color:rgba(255,255,255,.92);max-width:36ch">100 万个数里找一个，最少要问几次？今天的答案会吓你一跳。</div>
+      </div>
+    </div>
+  </div>
+  <div class="half" style="width:42%">
+    <div class="chrome"><span>Teaching Assistant</span><span>CLAWD · 助教</span></div>
+    <div class="main" style="justify-content:flex-end">
+      <div data-s="0" style="--dl:.9s" class="ps">本节课助教：Clawd<br><span class="sm-note">特长：猜数字、蹦跶、偶尔讲冷笑话</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 HOOK -->
+<section class="slide" data-id="hook">
+  <div class="chrome"><span>Part 01 · 一个游戏</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Game · 猜数字</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:2vh">我心里想了 1–100 中的一个数，<br>你怎么<span class="acc" style="font-weight:300">最快</span>猜中？</h2>
+    <div style="margin-top:7vh" class="eq-row" data-s="1">
+      <span class="h2x">最稳的办法</span>
+      <span class="h2x" style="color:var(--text-helper)">=</span>
+      <span class="strike-wrap h2x">1、2、3、4……一个个猜<span class="strike" data-s="2"></span></span>
+      <span class="ps" data-s="1" style="--dl:.3s">（总能猜中，对吧？）</span>
+    </div>
+    <div style="margin-top:5vh;display:flex;align-items:center;gap:2vw">
+      <div class="stamp" data-s="2" data-fx="pop" style="--dl:.35s">✗ 太慢了</div>
+      <div class="p" data-s="2" style="--dl:.6s;max-width:46ch">运气差要猜 100 次。我只告诉你「大了」还是「小了」——这句话，你根本没用上。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 CONCEPT -->
+<section class="slide" data-id="concept">
+  <div class="chrome"><span>Part 01 · 一个游戏</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">The Real Name · 它的真名</div>
+    <div style="display:flex;align-items:baseline;gap:2.4vw;margin-top:1.5vh">
+      <span class="giant" data-s="0" style="--dl:.1s;font-size:min(8.6vw,15vh)">Binary Search</span>
+      <span class="arrow-r" data-s="1" data-fx="left">→</span>
+      <span class="giant" data-s="1" data-fx="left" style="--dl:.15s;font-size:min(7.6vw,13.5vh);color:var(--accent-ink)">二分查找</span>
+    </div>
+    <div class="ps" data-s="0" style="--dl:.3s;margin-top:1.6vh;max-width:64ch"><span class="sq"></span>冷知识：1946 年就有人提出它，可第一个「完全没 bug」的版本，等到了 1962 年。看着简单，写对很难。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2vw;margin-top:4.5vh;max-width:78vw">
+      <div class="card" data-s="2"><div class="k" style="color:var(--text-helper)">Compare · 比较</div><div class="h2x" style="margin:.8vh 0 1vh">看中间 <span class="acc" style="font-weight:400">= 问</span></div><div class="ps">每次只猜正中间那个数，问一句：大了还是小了？</div></div>
+      <div class="card" data-s="2" style="--dl:.15s"><div class="k" style="color:var(--text-helper)">Halve · 砍半</div><div class="h2x" style="margin:.8vh 0 1vh">丢一半 <span class="acc" style="font-weight:400">= 砍</span></div><div class="ps">不管答案是什么，都能直接扔掉一半的可能。</div></div>
+    </div>
+    <div data-s="3" style="margin-top:3.4vh;border-left:4px solid var(--accent);padding-left:1.2vw;max-width:72vw" class="h3x">二分查找 = 在<b class="acc" style="font-weight:600">排好序</b>的数据里，每问一次，就把范围砍掉一半。</div>
+  </div>
+</section>
+
+<!-- 04 RACE -->
+<section class="slide" data-id="race">
+  <div class="chrome"><span>Part 02 · 比一比</span><span class="pg"></span></div>
+  <div class="main" style="flex-direction:row;gap:3vw">
+    <div style="width:29%;display:flex;flex-direction:column">
+      <div class="k" data-s="0">Example 01 · 赛跑</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh">64 个数里<br>找出目标</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1.4vh">柱子越高数越大。上面一个个找，下面二分查找。预测一下：谁先到？</p>
+      <ol class="steps-list" style="margin-top:2vh">
+        <li data-s="1"><span class="n">01</span><span class="p">一个个看 <span class="tag">线性</span></span></li>
+        <li data-s="2"><span class="n">02</span><span class="p">看中间，砍一半 <span class="tag a">二分</span></span></li>
+      </ol>
+      <div style="display:grid;margin-top:2vh">
+        <div data-s="1" data-until="2" style="grid-area:1/1">
+          <div class="ro">
+            <div class="l">线性：已经问了</div><div class="v"><span id="race-lin">0</span> 次</div>
+            <div class="l">二分：已经问了</div><div class="v acc"><span id="race-bin">0</span> 次</div>
+          </div>
+        </div>
+        <div data-s="3" class="card-ink" style="grid-area:1/1;align-self:start">
+          <div class="mono" style="font-size:14px;letter-spacing:.06em;color:#bbb">64 个数，最多问几次？</div>
+          <div style="font-weight:300;font-size:min(2.2vw,4vh);margin-top:.8vh">线性 64 次</div>
+          <div style="font-weight:300;font-size:min(2.2vw,4vh)">二分 <span style="color:var(--accent)">7 次</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column" data-s="0" data-fx="fade">
+      <div style="flex:1;min-height:0"><canvas class="cv" id="cv-race"></canvas></div>
+      <div class="seg" id="race-ctl" style="justify-content:flex-end;margin-top:1vh">
+        <button class="go">换个目标，再比一次</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 GROWTH -->
+<section class="slide" data-id="growth">
+  <div class="chrome"><span>Part 02 · 比一比</span><span class="pg"></span></div>
+  <div class="main">
+    <div>
+      <div class="k" data-s="0">Example 02 · 数据变大以后</div>
+      <h2 class="h2x" data-s="0" style="--dl:.1s;margin-top:1.4vh;white-space:nowrap">数据翻 1000 倍，要多问几次？</h2>
+      <p class="ps" data-s="0" style="--dl:.2s;margin-top:1vh">黑色：一个个找，最坏要问几次。<b class="acc">橙色</b>：二分查找，最坏要问几次。</p>
+    </div>
+    <div style="flex:1;min-height:0;margin-top:2vh" data-s="0" data-fx="fade"><canvas class="cv" id="cv-growth"></canvas></div>
+    <div data-s="4" class="ps" style="margin-top:1vh"><span class="sq"></span>数据每<b>翻一倍</b>，二分只多问<b class="acc">1 次</b>。这就叫 <span class="mono">O(log n)</span>。</div>
+  </div>
+</section>
+
+<!-- 06 CARDS -->
+<section class="slide" data-id="cards">
+  <div class="chrome"><span>Part 03 · 它有什么用</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Everywhere · 无处不在</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh;font-size:min(4.6vw,8.2vh)">你每天都在偷偷二分</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;margin-top:4vh">
+      <div class="card" data-s="1"><div class="k" style="color:var(--text-helper)">Dictionary · 查字典</div><div class="h3x" style="margin:.8vh 0">没人从第 1 页翻起</div><p class="ps">找「猫」：先翻到中间，是「L」，太前了，往后翻一半……你早就会二分了。</p></div>
+      <div class="card" data-s="2"><div class="k" style="color:var(--text-helper)">Debugging · git bisect</div><div class="h3x" style="margin:.8vh 0">1000 次提交，谁写的 bug？</div><p class="ps">昨天好的，今天坏了。每次检查中间那次提交，10 次左右就能揪出元凶。</p></div>
+      <div class="card-ink" data-s="3"><div class="k" style="color:#bbb">Database · 数据库索引</div><div class="h3x" style="margin:.8vh 0">几亿用户，登录秒进</div><p class="ps" style="color:#ccc">用户名排好序存起来，登录时一路砍半，30 次以内就找到你。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 SUMMARY -->
+<section class="slide" data-id="summary">
+  <div class="chrome"><span>Summary · 总结</span><span class="pg"></span></div>
+  <div class="main" style="justify-content:center">
+    <div class="k" data-s="0">So, Binary Search is …</div>
+    <div class="sum-text" data-s="0" style="--dl:.15s;margin-top:2.6vh;font-weight:200;font-size:min(3.7vw,6.6vh);line-height:1.42;letter-spacing:-.01em;max-width:92vw">
+      所以，二分查找就是：<br>
+      在 <span class="hl" data-hl="1" style="font-weight:400">排好序</span> 的数据里，<br>
+      每次 <span class="hl" data-hl="2" style="font-weight:400">看中间</span>，再 <span class="hl" data-hl="3" style="font-weight:400">砍一半</span><br>
+      的一种找东西的方法。
+    </div>
+    <div data-s="4" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;margin-top:5vh;max-width:74vw">
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">前提</div><div class="h3x">必须有序</div></div>
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">动作</div><div class="h3x">问中间 · 砍一半</div></div>
+      <div class="rule" style="padding-top:1.4vh"><div class="k" style="color:var(--text-helper)">速度</div><div class="h3x">O(log n)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 ROADMAP -->
+<section class="slide" data-id="road">
+  <div class="chrome"><span>Next · 接下来</span><span class="pg"></span></div>
+  <div class="main">
+    <div class="k" data-s="0">Roadmap · 路线图</div>
+    <h2 class="h1x" data-s="0" style="--dl:.1s;margin-top:1.4vh">我们的打怪路线</h2>
+    <div class="road" style="margin-top:8vh;max-width:86vw">
+      <div class="node here" data-s="0" style="--dl:.2s"><div class="num">LV.0 · 今天</div><div class="nm">二分查找</div><div class="ps">问中间，砍一半</div></div>
+      <div class="node" data-s="1"><div class="num">LV.1</div><div class="nm">写代码</div><div class="ps">lo / hi / mid</div></div>
+      <div class="node" data-s="1" style="--dl:.15s"><div class="num">LV.2</div><div class="nm">边界 bug</div><div class="ps">死循环退散</div></div>
+      <div class="node" data-s="1" style="--dl:.3s"><div class="num">LV.3</div><div class="nm">排序</div><div class="ps">先把房间收拾好</div></div>
+      <div class="node" data-s="1" style="--dl:.45s"><div class="num">LV.4</div><div class="nm">二分答案</div><div class="ps">最终 Boss</div></div>
+    </div>
+    <div class="card" data-s="2" style="margin-top:7vh;max-width:56vw;border-left:4px solid var(--accent)">
+      <div class="k">Homework · 课后想一想</div>
+      <div class="h3x" style="margin-top:1vh">全世界 80 亿人按身份证号排好队，找一个人最多要问几次？<br>再想一个：生活里还有什么地方，你在不知不觉地二分？</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+
+<div id="clawd" class="side-l">
+  <div class="bubble"><span class="txt"></span><span class="cursor"></span></div>
+  <svg viewBox="0 0 20 12" shape-rendering="crispEdges" aria-label="Clawd">
+    <g class="c-all">
+      <g fill="#D97757">
+        <rect class="leg la" x="3" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg lb" x="6" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg la" x="12.5" y="8.8" width="1.5" height="3.2"/>
+        <rect class="leg lb" x="15.5" y="8.8" width="1.5" height="3.2"/>
+        <rect x="2" y="0" width="16" height="9.2"/>
+        <rect class="arm al" x="0" y="3" width="2.2" height="3"/>
+        <rect class="arm ar" x="17.8" y="3" width="2.2" height="3"/>
+      </g>
+      <g class="look"><g class="eyes" fill="#000"><rect x="4.2" y="2.6" width="1.6" height="2"/><rect x="14.2" y="2.6" width="1.6" height="2"/></g></g>
+      <g class="blush" fill="#f2b9a3"><rect x="3.4" y="5.4" width="2.2" height=".9"/><rect x="14.4" y="5.4" width="2.2" height=".9"/></g>
+      <g class="sweat" fill="#6fb7ff"><rect x="18.4" y="-.6" width=".9" height="1.4"/></g>
+    </g>
+  </svg>
+</div>
+
+<div id="foot"><span class="hint">← → 翻页 · F 全屏 · H 隐藏助教</span><span class="dots" id="dots"></span></div>
+<div id="prog"></div>
+
+<script>
+/* ============ utils ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+class Tw{constructor(v,k=6){this.v=v;this.t=v;this.k=k}set(t){this.t=t}snap(v){this.v=this.t=v}upd(dt){this.v+=(this.t-this.v)*(1-Math.exp(-this.k*dt));if(Math.abs(this.t-this.v)<1e-5)this.v=this.t}}
+class Lin{constructor(v,sp=1){this.v=v;this.t=v;this.sp=sp}set(t){this.t=t}snap(v){this.v=this.t=v}upd(dt){const d=this.t-this.v,m=this.sp*dt;this.v=Math.abs(d)<=m?this.t:this.v+Math.sign(d)*m}}
+function fit(cv){const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1),w=Math.max(10,r.width),h=Math.max(10,r.height);const W=Math.round(w*d),H=Math.round(h*d);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}const ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h}}
+const C={accent:'#D97757',accentInk:'#B0502C',ink:'#0a0a0a',paper:'#fafaf8',g1:'#f0f0ee',g2:'#d4d4d2',g3:'#737373'};
+const MONO='500 14px "JetBrains Mono", ui-monospace, Menlo, monospace';
+const SANS=(w,s)=>`${w} ${s}px Inter, "Noto Sans SC", "PingFang SC", sans-serif`;
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function setText(el,v){if(el&&el.textContent!==v)el.textContent=v}
+function dashed(ctx,on){ctx.setLineDash(on?[4,4]:[])}
+
+
+/* ============ canvas helpers: graph frame + axes ============ */
+function axes(ctx,g,xmax,ymax,xt,yt,xl,yl){
+  ctx.font=MONO;ctx.lineWidth=1;
+  for(let v=yt;v<=ymax+1e-9;v+=yt){const y=g.Y(v);ctx.strokeStyle='rgba(10,10,10,.07)';ctx.beginPath();ctx.moveTo(g.L,y);ctx.lineTo(g.R,y);ctx.stroke();ctx.fillStyle=C.g3;ctx.textAlign='right';ctx.fillText(v,g.L-8,y+5)}
+  for(let v=xt;v<=xmax+1e-9;v+=xt){const x=g.X(v);ctx.strokeStyle='rgba(10,10,10,.07)';ctx.beginPath();ctx.moveTo(x,g.T);ctx.lineTo(x,g.B);ctx.stroke();ctx.fillStyle=C.g3;ctx.textAlign='center';ctx.fillText(v,x,g.B+20)}
+  ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(g.L,g.T-6);ctx.lineTo(g.L,g.B);ctx.lineTo(g.R+6,g.B);ctx.stroke();
+  ctx.fillStyle=C.ink;ctx.textAlign='left';ctx.fillText(yl,g.L+8,g.T+4);ctx.textAlign='right';ctx.fillText(xl,g.R,g.B-8);
+}
+function graph(w,h,xmax,ymax,top){const L=56,R=w-18,T=top,B=h-36;return{L,R,T,B,X:t=>L+t/xmax*(R-L),Y:v=>B-v/ymax*(B-T),kx:(R-L)/xmax,ky:(B-T)/ymax}}
+
+
+/* ============ SCENES ============ */
+const SC={};
+
+/* ---- race: linear vs binary on 64 sorted bars ---- */
+SC.race=(()=>{
+  const cv=$('#cv-race'),R={lin:$('#race-lin'),bin:$('#race-bin')};const N=64;
+  const rnd=mulberry(11),V=[];for(let i=0;i<N;i++)V.push(Math.max(i?V[i-1]+1:6,Math.round(6+i*1.5+rnd()*2)));const VM=V[N-1];
+  let T=45,runL=false,runB=false,clock=0;
+  const L={i:-1,cnt:0,done:false,acc:0}, B={lo:0,hi:N-1,mid:-1,cnt:0,done:false,acc:0,ph:0,msg:''};
+  const loV=new Tw(0,6),hiV=new Tw(N-1,6),midA=new Tw(0,8);
+  function resetL(){Object.assign(L,{i:-1,cnt:0,done:false,acc:0})}
+  function resetB(){Object.assign(B,{lo:0,hi:N-1,mid:-1,cnt:0,done:false,acc:0,ph:0,msg:''});loV.snap(0);hiV.snap(N-1);midA.snap(0)}
+  function stepL(){if(L.done)return;L.i++;L.cnt++;if(L.i===T)L.done=true}
+  function stepB(){if(B.done)return;
+    if(B.ph===0){B.mid=(B.lo+B.hi)>>1;B.cnt++;midA.snap(0);midA.set(1);B.ph=1;B.msg=`第 ${B.cnt} 次：看中间，是 ${V[B.mid]}`}
+    else{const m=B.mid;if(m===T){B.done=true;B.lo=B.hi=T;B.msg=`找到了！一共问了 ${B.cnt} 次`}
+      else if(m<T){B.lo=m+1;B.msg=`${V[m]} 小了 → 左半边全扔掉`}else{B.hi=m-1;B.msg=`${V[m]} 大了 → 右半边全扔掉`}
+      loV.set(B.lo);hiV.set(B.hi);B.ph=0}}
+  function finish(o,f){let k=0;while(!o.done&&k++<400)f()}
+  function apply(s,snap){
+    if(snap){resetL();resetB();if(s>=2)finish(L,stepL);if(s>=3){finish(B,stepB);loV.snap(B.lo);hiV.snap(B.hi);midA.snap(1)}}
+    else if(s<1){resetL();resetB()}else if(s<2){resetB()}
+    runL=s>=1;runB=s>=2}
+  $('#race-ctl .go').addEventListener('click',e=>{e.stopPropagation();let t;do{t=8+Math.floor(Math.random()*(N-10))}while(t===T);T=t;resetL();resetB()});
+  function row(ctx,w,top,base,col,label,status){
+    const bw=(w-8)/N;ctx.font=MONO;ctx.fillStyle=C.ink;ctx.textAlign='left';ctx.fillText(label,4,top-8);ctx.fillStyle=C.accentInk;ctx.textAlign='right';ctx.fillText(status,w-4,top-8);
+    for(let i=0;i<N;i++){const hh=V[i]/VM*(base-top-8);ctx.fillStyle=col(i);ctx.fillRect(4+i*bw+1,base-hh,Math.max(1,bw-2),hh)}
+    ctx.fillStyle=C.accent;const tx=4+(T+.5)*bw;ctx.beginPath();ctx.moveTo(tx,base+4);ctx.lineTo(tx-6,base+13);ctx.lineTo(tx+6,base+13);ctx.fill();
+    return bw}
+  return{
+    enter(s){apply(s,true);clock=0},setStep(s){apply(s,false)},
+    frame(d,now,active){clock+=d;[loV,hiV,midA].forEach(o=>o.upd(d));
+      if(runL&&!L.done){L.acc+=d;if(L.acc>.12){L.acc=0;stepL()}}
+      if(runB&&!B.done){B.acc+=d;if(B.acc>.8){B.acc=0;stepB()}}
+      const{ctx,w,h}=fit(cv);const rowH=(h-140)/2,t1=40,b1=t1+rowH,t2=b1+56,b2=t2+rowH;
+      ctx.font=MONO;ctx.fillStyle=C.g3;ctx.textAlign='right';ctx.fillText(`目标 = ${V[T]} ▲`,w-4,14);
+      row(ctx,w,t1,b1,i=>L.done&&i===T?C.accent:i===L.i?C.accent:i<L.i?C.g1:'#a3a3a3','一个个找',L.done?`找到了！一共问了 ${L.cnt} 次`:L.cnt?`第 ${L.cnt} 次：${V[L.i]}？不是`:'');
+      const bw=row(ctx,w,t2,b2,i=>{if(B.done&&i===T)return C.accent;if(i===B.mid&&B.ph===1)return C.ink;return(i<loV.v-.5||i>hiV.v+.5)?C.g1:'#a3a3a3'},'二分查找',B.msg);
+      if(B.cnt&&!B.done){const x0=4+loV.v*bw,x1=4+(hiV.v+1)*bw,y=b2+24;ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y-6);ctx.lineTo(x0,y);ctx.lineTo(x1,y);ctx.lineTo(x1,y-6);ctx.stroke();
+        ctx.font=MONO;ctx.fillStyle=C.accentInk;ctx.textAlign='center';ctx.fillText(`还剩 ${B.hi-B.lo+1} 个`,clamp((x0+x1)/2,50,w-50),y+18)}
+      if(B.mid>=0&&B.ph===1&&!B.done){ctx.globalAlpha=midA.v;const x=4+(B.mid+.5)*bw,hh=V[B.mid]/VM*(b2-t2-8);ctx.font=SANS(600,16);ctx.fillStyle=C.ink;ctx.textAlign='center';ctx.fillText('中间',x,b2-hh-8);ctx.globalAlpha=1}
+      if(active){setText(R.lin,String(L.cnt));setText(R.bin,String(B.cnt))}
+    }};
+})();
+
+/* ---- growth: worst-case questions, linear vs binary, as data grows ---- */
+SC.growth=(()=>{
+  const cv=$('#cv-growth');const ROWS=[[16,'16'],[1000,'1,000'],[1e6,'100 万'],[8e9,'80 亿']];
+  const bin=n=>Math.floor(Math.log2(n))+1;const gL=new Tw(0,2.2),gB=new Tw(0,2.6),hl=new Tw(0,4);
+  const ST=[[0,0,0],[1,0,0],[1,1,0],[1,1,1],[1,1,1]];
+  function apply(s,snap){const c=ST[Math.min(s,4)],m=snap?'snap':'set';gL[m](c[0]);gB[m](c[1]);hl[m](c[2])}
+  const big=x=>x<1e4?Math.round(x).toLocaleString():x<1e8?Math.round(x/1e4).toLocaleString()+' 万':(x/1e8).toFixed(1)+' 亿';
+  return{
+    enter(s){apply(s,true)},setStep(s){apply(s,false)},
+    frame(d){[gL,gB,hl].forEach(o=>o.upd(d));const{ctx,w,h}=fit(cv);
+      const L0=120,R0=w-24,W=R0-L0,k=W*.5/33,rh=h/ROWS.length,bh=Math.min(22,rh*.26);
+      ROWS.forEach(([n,lab],r)=>{const y=r*rh+rh*.18,u=ease(clamp(gL.v*1.6-.2*r,0,1)),ub=ease(clamp(gB.v*1.6-.2*r,0,1));
+        const hot=r===3&&hl.v>.5;ctx.font=SANS(300,26);ctx.fillStyle=hot?C.accentInk:C.ink;ctx.textAlign='left';ctx.fillText(lab,0,y+bh+10);
+        ctx.font=MONO;ctx.fillStyle=C.g3;ctx.fillText('个数据',0,y+bh+30);
+        // linear (ink)
+        const full=n*k,len=Math.min(full,W)*u;ctx.fillStyle=C.ink;ctx.fillRect(L0,y,len,bh);
+        if(full>W&&u>.98){ctx.fillStyle=C.paper;ctx.beginPath();ctx.moveTo(R0-30,y-2);ctx.lineTo(R0-18,y+bh/2);ctx.lineTo(R0-30,y+bh+2);ctx.lineTo(R0-22,y+bh+2);ctx.lineTo(R0-10,y+bh/2);ctx.lineTo(R0-22,y-2);ctx.fill();
+          ctx.font=MONO;ctx.fillStyle=C.ink;ctx.textAlign='right';ctx.fillText(`${n.toLocaleString()} 次 · 要 ${big(full/W)} 块屏幕才放得下`,R0,y-6)}
+        else if(u>.02){ctx.font=MONO;ctx.fillStyle=C.ink;ctx.textAlign='left';ctx.fillText(`${n} 次`,L0+len+8,y+bh-5)}
+        // binary (accent)
+        const yb=y+bh+8,lb=bin(n)*k*ub;ctx.fillStyle=C.accent;ctx.fillRect(L0,yb,lb,bh);
+        if(ub>.02){ctx.font=hot?SANS(600,20):MONO;ctx.fillStyle=C.accentInk;ctx.textAlign='left';ctx.fillText(`${bin(n)} 次`,L0+lb+8,yb+bh-4)}
+        if(hot){ctx.globalAlpha=hl.v;ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.strokeRect(L0-6,yb-5,lb+90,bh+10);ctx.globalAlpha=1}
+      });
+    }};
+})();
+
+/* ============ CLAWD SCRIPT (per slide, per step) ============ */
+const CL={
+  cover:[{x:79,y:72,s:2.2,say:'嗨！我是 Clawd，今天的算法小助教。我心里已经想好一个数了。',act:'wave',mood:'happy'}],
+  hook:[
+    {x:86,y:88,s:1.3,say:'来，猜猜我心里想的数。1 到 100。'},
+    {x:86,y:88,s:1.3,say:'一个个猜？稳是稳……我先去泡杯茶。',look:-1},
+    {x:86,y:88,s:1.3,say:'等你猜到 100，我都下课了！「大了 / 小了」要用上啊。',act:'jump',mood:'happy'}],
+  concept:[
+    {x:40,perch:1,say:'它的英文叫 Binary Search。Binary 就是「二」。'},
+    {x:44,perch:1,say:'中文：二分查找！名字就是做法。',act:'jump'},
+    {x:44,perch:1,say:'只干两件事：问中间，砍一半。'},
+    {x:44,perch:1,say:'注意「排好序」三个字。考试会考，bug 也会考。',mood:'sweaty'}],
+  race:[
+    {x:38,perch:1,say:'64 根柱子，目标藏在其中一根。你押谁赢？'},
+    {x:38,perch:1,say:'线性选手：一根、一根、一根……我看困了。',mood:'sweaty'},
+    {x:38,perch:1,say:'二分选手：直接看中间！每问一次，嫌疑人少一半。',act:'jump'},
+    {x:38,perch:1,say:'几十次 vs 几次。这不是赛跑，这是碾压。',mood:'happy'}],
+  growth:[
+    {x:40,perch:1,say:'数据越来越大，会发生什么？'},
+    {x:40,perch:1,say:'黑色这根……屏幕放不下了。真的放不下了。',mood:'sweaty'},
+    {x:42,perch:1,say:'橙色这根：100 万个数，只要 20 次！',act:'jump'},
+    {x:42,perch:1,say:'全世界 80 亿人，33 次找到你。躲不掉的。',mood:'happy'},
+    {x:42,perch:1,say:'数据翻一倍，只多问一次。这就是 log 的魔力。',act:'jump'}],
+  cards:[
+    {x:40,perch:1,say:'你以为二分离你很远？'},
+    {x:40,perch:1,say:'查字典时你早就在二分了。恭喜，你已经会了。',mood:'happy'},
+    {x:40,perch:1,say:'git bisect：1000 次提交里揪出写 bug 的人。不是我。',mood:'sweaty'},
+    {x:40,perch:1,say:'你每次秒登录，背后都有人在砍半。比如我的同事们。',act:'jump'}],
+  summary:[
+    {x:40,perch:1,say:'最后，一句话收尾。'},
+    {x:40,perch:1,say:'前提：排好序。乱七八糟的房间，二分不了。',mood:'sweaty'},
+    {x:40,perch:1,say:'动作一：看中间。'},
+    {x:40,perch:1,say:'动作二：砍一半。'},
+    {x:40,perch:1,say:'就这？就这。但它能把 100 万变成 20。',act:'jump',mood:'happy'}],
+  road:[
+    {x:40,perch:1,say:'我们在这儿：新手村。'},
+    {x:60,perch:1,say:'友情提示：LV.2 的边界 bug，才是真正的 Boss。',mood:'sweaty'},
+    {x:88,y:90,s:1.1,say:'下节课：亲手写一个二分。下节课见！',act:'wave',mood:'happy'}],
+};
+const QUIPS=['别戳我，看黑板！','我心里想的数是……不告诉你。','问中间，砍一半。记住没？','2¹⁰ = 1024，所以 1000 个数只要 10 次。','偷偷告诉你：二分不难，难的是边界。'];
+
+/* ============ CLAWD CONTROLLER ============ */
+const clawd=(()=>{
+  const el=$('#clawd'),svg=$('#clawd svg'),bub=$('#clawd .bubble'),txt=$('#clawd .txt'),cursor=$('#clawd .cursor'),look=$('#clawd .look');
+  let x=110,y=90,typing=null,lastSay='',walkT=null,actT=null;
+  function say(s){if(s===lastSay)return;lastSay=s;clearInterval(typing);if(!s){bub.classList.remove('show');return}
+    // perch bubbles sit above the chrome rule; if a long line needs more room than there is, let it hang lower instead of leaving the screen
+    if(el.classList.contains('bside')){txt.textContent=s;const need=bub.offsetHeight,room=y/100*innerHeight-8;bub.style.bottom=(need>room?room-need:1)+'px'}else bub.style.bottom='';
+    bub.classList.add('show');txt.textContent='';cursor.style.display='inline-block';let i=0;const chars=[...s];
+    typing=setInterval(()=>{txt.textContent+=chars[i++]||'';if(i>=chars.length){clearInterval(typing);setTimeout(()=>cursor.style.display='none',600)}},38)}
+  function act(a){svg.classList.remove('jump','shake');el.classList.remove('wave');void svg.offsetWidth;if(a==='jump')svg.classList.add('jump');if(a==='shake')svg.classList.add('shake');if(a==='wave')el.classList.add('wave');clearTimeout(actT);actT=setTimeout(()=>el.classList.remove('wave'),2200)}
+  function to(p0){
+    const p=Object.assign({},p0);
+    if(p.perch){const ch=slides[cur].querySelector('.chrome');p.y=ch?ch.getBoundingClientRect().bottom/innerHeight*100:10;p.s=p.s||.62}
+    const dx=p.x-x,moving=Math.abs(dx)+Math.abs(p.y-y)>.5;x=p.x;y=p.y;
+    el.classList.toggle('side-l',p.perch?!!p.left:p.x>55);el.classList.toggle('bside',!!p.perch);el.style.setProperty('--s',p.s);
+    el.style.transform=`translate3d(${p.x}vw,${p.y}vh,0)`;
+    const lk=p.look!=null?p.look:(moving?Math.sign(dx):0);look.style.transform=`translateX(${lk*.7}px)`;
+    el.classList.remove('happy','sweaty');
+    if(moving){el.classList.add('walk');clearTimeout(walkT);bub.classList.remove('show');lastSay='';walkT=setTimeout(()=>{el.classList.remove('walk');if(p.look==null)look.style.transform='translateX(0)';fin()},1150)}else fin();
+    function fin(){if(p.mood)el.classList.add(p.mood);if(p.act)act(p.act);say(p.say||'')}
+  }
+  let qi=0;
+  svg.addEventListener('click',e=>{e.stopPropagation();act('jump');el.classList.add('happy');lastSay='';say(QUIPS[qi++%QUIPS.length]);setTimeout(()=>el.classList.remove('happy'),1500)});
+  return{to,el};
+})();
+
+/* ============ DECK ENGINE ============ */
+const slides=$$('.slide'),N=slides.length,deck=$('#deck');
+const info=slides.map((sl,i)=>{const id=sl.dataset.id;let mx=0;$$('[data-s],[data-hl]',sl).forEach(e=>mx=Math.max(mx,+(e.dataset.s??e.dataset.hl)));if(CL[id])mx=Math.max(mx,CL[id].length-1);$$('.pg',sl).forEach(p=>p.textContent=`${String(i+1).padStart(2,'0')} / ${N}`);return{id,max:mx}});
+let cur=0,st=0,enterT=null;
+function reveal(sl,s){$$('[data-s]',sl).forEach(e=>{const k=+e.dataset.s;e.classList.toggle('on',k<=s);e.classList.toggle('cur',k===s)});$$('[data-hl]',sl).forEach(e=>e.classList.toggle('lit',+e.dataset.hl<=s));$$('[data-until]',sl).forEach(e=>e.classList.toggle('gone',s>+e.dataset.until))}
+function go(i,s){
+  i=clamp(i,0,N-1);s=clamp(s,0,info[i].max);const changed=i!==cur||!go.inited;go.inited=true;cur=i;st=s;
+  deck.style.transform=`translate3d(${-i*100}vw,0,0)`;const sl=slides[i],id=info[i].id,sc=SC[id];
+  if(changed){sl.classList.add('noanim');reveal(sl,-1);void sl.offsetWidth;sl.classList.remove('noanim');sc&&sc.enter&&sc.enter(s);clearTimeout(enterT);
+    enterT=setTimeout(()=>{if(cur!==i)return;reveal(sl,st);sc&&sc.setStep&&sc.setStep(st)},480)}
+  else{reveal(sl,s);sc&&sc.setStep&&sc.setStep(s)}
+  const cl=CL[id];if(cl)clawd.to(cl[Math.min(s,cl.length-1)]);
+  document.body.classList.toggle('on-acc',sl.classList.contains('split'));document.body.classList.toggle('first',i===0);
+  $('#prog').style.width=((i+(info[i].max?s/(info[i].max+1):0))/(N-1)*100)+'%';
+  const dots=$('#dots');dots.innerHTML='';for(let k=0;k<=info[i].max;k++){const d=document.createElement('i');if(k<s)d.className='on';if(k===s)d.className='cur';dots.appendChild(d)}
+  try{history.replaceState(null,'',`#${i+1}.${s}`)}catch(e){}
+}
+addEventListener('resize',()=>{const cl=CL[info[cur].id];if(cl&&cl[Math.min(st,cl.length-1)].perch)clawd.to(cl[Math.min(st,cl.length-1)])});
+const next=()=>{if(st<info[cur].max)go(cur,st+1);else if(cur<N-1)go(cur+1,0)};
+const prev=()=>{if(st>0)go(cur,st-1);else if(cur>0)go(cur-1,info[cur-1].max)};
+addEventListener('keydown',e=>{const k=e.key;
+  if(['ArrowRight',' ','PageDown','Enter','ArrowDown'].includes(k)){e.preventDefault();next()}
+  else if(['ArrowLeft','PageUp','ArrowUp','Backspace'].includes(k)){e.preventDefault();prev()}
+  else if(k==='Home')go(0,0);else if(k==='End')go(N-1,info[N-1].max);
+  else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}
+  else if(k==='h'||k==='H')clawd.el.classList.toggle('hidden');
+});
+addEventListener('click',e=>{if(e.target.closest('button,a,input'))return;(e.clientX<innerWidth*.18?prev:next)()});
+let tx=null;addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});addEventListener('touchend',e=>{if(tx==null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)(d<0?next:prev)();tx=null});
+let wheelLock=0;addEventListener('wheel',e=>{const n=Date.now();if(n<wheelLock||Math.abs(e.deltaY)<30)return;wheelLock=n+700;(e.deltaY>0?next:prev)()},{passive:true});
+
+/* ============ background grid ============ */
+const bg=$('#bg');let mouse=[-999,-999],bgDirty=true;
+addEventListener('mousemove',e=>{mouse=[e.clientX,e.clientY];bgDirty=true},{passive:true});addEventListener('resize',()=>bgDirty=true);
+function drawBg(){const{ctx,w,h}=fit(bg);const c=40;ctx.strokeStyle='rgba(10,10,10,.045)';ctx.lineWidth=1;ctx.beginPath();for(let x=.5;x<w;x+=c){ctx.moveTo(x,0);ctx.lineTo(x,h)}for(let y=.5;y<h;y+=c){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();
+  for(let x=0;x<w;x+=c)for(let y=0;y<h;y+=c){const d=Math.hypot(x-mouse[0],y-mouse[1]);if(d<170){const a=1-d/170;ctx.fillStyle=`rgba(217,119,87,${.25+.6*a})`;const s=1.5+3*a;ctx.fillRect(x-s/2,y-s/2,s,s)}else{ctx.fillStyle='rgba(10,10,10,.16)';ctx.fillRect(x-.75,y-.75,1.5,1.5)}}}
+
+/* ============ loop ============ */
+let last=performance.now();
+function loop(now){const d=Math.min(.05,(now-last)/1000);last=now;
+  for(let k=cur-1;k<=cur+1;k++){if(k<0||k>=N)continue;const sc=SC[info[k].id];if(sc&&sc.frame)sc.frame(d,now/1000,k===cur)}
+  if(bgDirty){drawBg();bgDirty=false}requestAnimationFrame(loop)}
+
+/* init */
+(function(){const m=location.hash.match(/^#(\d+)(?:\.(\d+))?/);let i=0,s=0;if(m){i=+m[1]-1;s=+(m[2]||0)}
+  go(i,s);requestAnimationFrame(loop)})();
+</script>
+</body>
+</html>
